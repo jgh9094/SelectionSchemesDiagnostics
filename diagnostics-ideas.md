@@ -1,0 +1,55 @@
+- Diagnostics
+  - Exploitation diagnostic - k-values
+    - Some goal (e.g., 100)
+      - how close to 100 can it get?
+      - extension: k numbers, all k numbers need to be 100; as there are more and
+        more numbers do you lose precision?
+      - Could add neutral space around targets?
+  - Structured exploitation - structured-k-values
+    - more of a relationship between values (trade offs?)
+    - k numbers, e.g., targeting 100
+    - as you go from the beginning, the second value only gets evaluated if it's
+      equal to or greater the second value
+    - need to optimize the first value, then second value, etc
+  - Ecology diagnostic - contraditory-k-values
+    - organisms are k values (traits)
+    - if any individual organism can only be selected for one of the values, how
+      many distinct niches can be filled at any point in time?
+    - fitness contribution of any trait is: k_i - max(other k values)
+  - Ecology diagnostic - k-values
+    - **default** ecology diagnostic
+    - organisms are k values (trait)
+    - only score the highest value (don't give negatives), zeros for other objectives
+  - Specialist diagnostic
+    - organism is k values
+    - variant on ecology metric
+    - score on traits 1-(k-1) is value in trait minus score in the specialist trait
+  - Bad hints diagnostic
+    - (Emily's box problem?)
+    - organisms are k values
+    - k objectives (if objective is below 99, score = 0)
+    - we give them a good hint objective
+    - we given them a bad hint objective
+    - how much does a single good hint vs single bad hint change outcomes?
+  - Bias diagnostic
+    - organisms are k values
+    - k objectives, bias importance of each objective
+  - Deceptive landscape
+    - exploitation + sawtooth effect (fitness = 10s place, -ones place)
+  - Overfitting diagnostic - noise
+    - organisms are k values, all hit 100
+    - put noise on the test cases (5 test cases associated with each trait)
+    - mean will be 100, but with gaussian noise
+  - Overfitting diagnostic - smoothness
+    - regression
+  - Exploration diagnostic
+    - If there are many good places to go from here, can I find the right path?
+    - Only the highest trait counts & sequentially from there, going forward
+      any traits that are lower than it
+    - expectation - age based selection schemes do well here
+  - Pareto front diagnostic
+    - explicit trade-offs
+    - overall target, everytime there's a mutation => equal and opposite mutation
+      on another trait
+    - how many combinations can the selection scheme look at?
+    - lots possible!
