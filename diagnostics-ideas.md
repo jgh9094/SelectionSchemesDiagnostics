@@ -1,9 +1,8 @@
 Diagnostics:
 
-  **X is the target value**
-  **K is the number of org internal values**
-
-  [] Exploitation Diagnostic
+  - **X is the target value**
+  - **K is the number of org internal values**
+  - Exploitation Diagnostic
     - Purpose:
       - This will allow us to see if selection schemes can reach the target objective, even though there are multiple ways to get there.
       - Orgs will try to exploit a specific internal value.
@@ -29,7 +28,7 @@ Diagnostics:
       - As there are more and more numbers do you lose precision?
       - Add neutral space around targets
 
-  [] Structured Exploitation Diagnostic - Structured K Values
+  - Structured Exploitation Diagnostic - Structured K Values
     - Purpose:
       - Some problems are structured in such a way where they require approach building block when trying to reach a solution.
       - This provides more of a relationship between the orgs internal values.
@@ -53,7 +52,7 @@ Diagnostics:
       - Phylogenetic tree
       - Solution count
 
-  [] Ecology Diagnostic - Contradictory K Values
+  - Ecology Diagnostic - Contradictory K Values
     - Purpose:
       - If any individual organism can only be selected for one of the K values, how many distinct niches can be filled at any point in time?
     - Literature: 
@@ -71,7 +70,7 @@ Diagnostics:
       - Phenotypic diversity
       - Phylogenetic tree
 
-  [] Ecology Diagnostic
+  - Ecology Diagnostic
     - Purpose: 
       - **default** ecology diagnostic
     - Literature: 
@@ -88,7 +87,7 @@ Diagnostics:
       - Phenotypic diversity
       - Phylogenetic tree
 
-  [] Specialist Diagnostic
+  - Specialist Diagnostic
     - Purpose:
       - How does the proposed selection scheme deal with specialist preservation?
     - Literature: 
@@ -110,7 +109,7 @@ Diagnostics:
       - Phenotypic diversity
       - Phylogenetic tree
 
-  [] Bad Hints Diagnostic
+  - Bad Hints Diagnostic
     - Purpose:
       - When dealing with a huge testing space, it can be difficult to know if all test cases are correct. 
       - How does a selection scheme contend with this challenge. 
@@ -135,7 +134,7 @@ Diagnostics:
       - Phenotypic diversity
       - Phylogenetic tree
 
-  [] Bias diagnostic
+  - Bias diagnostic
     - Purpose:
       - When dealing with a huge testing space, it can be difficult to know what test cases are redundant.
       - How does a selection scheme contend with this challenge.
@@ -156,7 +155,7 @@ Diagnostics:
       - Phenotypic diversity
       - Phylogenetic tree
 
-  [] Deceptive landscape
+  - Deceptive landscape
     - Purpose:
       - When dealing with certain problems, the landscape may be deceptive to an organisms exploration.
       - How does a selection scheme contend with this challenge.
@@ -179,7 +178,7 @@ Diagnostics:
       - Phylogenetic tree
       - Exploitation + sawtooth effect
 
-  [] Overfitting diagnostic - Noise
+  - Overfitting diagnostic - Noise
     - Purpose:
       - When dealing with data, there may be noise associated with it
       - How does a selection scheme contend with this challenge
@@ -202,7 +201,7 @@ Diagnostics:
       - Phenotypic diversity
       - Phylogenetic tree
 
-  [] Overfitting diagnostic - Smoothness
+  - Overfitting diagnostic - Smoothness
     - Purpose:
       - Please help...
     - Literature: 
@@ -225,7 +224,7 @@ Diagnostics:
       - Phenotypic diversity
       - Phylogenetic tree
 
-  [] Exploration diagnostic
+  - Exploration diagnostic
     - Only the highest trait counts & sequentially from there, going forward any traits that are lower than it
     - Purpose:
       - If there are many good places to go from here, can I find the right path?
@@ -248,9 +247,8 @@ Diagnostics:
     - Expectation:
       - Age based selection schemes do well here
 
-  [] Pareto front diagnostic **MAYBE**
+  - Pareto front diagnostic **MAYBE**
     - explicit trade-offs
-    - overall target, every time there's a mutation => equal and opposite mutation
-      on another trait
+    - overall target, every time there's a mutation => equal and opposite mutation on another trait
     - how many combinations can the selection scheme look at?
     - lots possible!
