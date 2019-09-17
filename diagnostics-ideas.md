@@ -15,7 +15,7 @@ Diagnostics:
       - No instructions required, since org is essentially a bit string.
     - Problem: 
       - Given K values and some integer objective X, how close can the organisms get to X?
-      - fitness(org) = vi, where vi is the internal value at position i.
+      - fitness(org) = |X - vi|, where vi is the internal value at position i.
     - Analysis:
       - How close to X can orgs get?
       - Could add neutral space around targets?
