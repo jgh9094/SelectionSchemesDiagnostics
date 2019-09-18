@@ -103,16 +103,17 @@ Diagnostics:
     - Literature:
       - STILL LOOKING ._.
     - ORG Structure:
+      - Organisms are length-K vectors of doubles (each double representing a trait).
       - K internal values (vector of k values)
         - [v1, v2, ..., vk]
-      - One of the K internal values is a specialist trait vk
+      - One of the K internal values is a specialist trait (vk)
       - Mutations can increase or decrease a specific k value
-      - No instructions required, since org is essentially a bit string
     - Problem:
-      - fitness(org) = |X - vk| + |X - vj|
-        - vj is the randomly chosen trait to evaluate
-    - Extension:
-      - Variant on ecology metric
+      - Variant on the ecology diagnostic.
+      - Score on non-specialist traits is value in trait minus the score in the
+        specialist trait.
+      - Score on specialist trait is just how close it is to the target for that
+        trait position.
     - Analysis:
       - Solution count
         - **What does a solution look like?**
