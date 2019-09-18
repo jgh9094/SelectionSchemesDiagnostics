@@ -6,46 +6,53 @@ Diagnostics:
     - Purpose:
       - This will allow us to see if selection schemes can reach the target objective, even though there are multiple ways to get there.
       - Orgs will try to exploit a specific internal value.
-    - Literature: 
+    - Literature:
       - Exploration and Exploitation in Evolutionary Algorithms: A Survey
-    - ORG Structure: 
+    - ORG Structure:
+      - Organisms are length-K vectors of doubles.
       - K internal values (vector of k values).
         - [v1, v2, ..., vk]
       - Mutations can increase or decrease a specific K value.
-      - No instructions required, since org is essentially a bit string.
-    - Problem: 
-      - Given K values and some integer objective X, how close can the organisms get to X?
+    - Problem:
+      - The environment is represented as K targets, each target _i_ corresponding to
+        position _i_ in organism genomes.
+      - Goal: to maximize fitness, each position in a genome should be as close
+        as possible to the associated target _i_.
       - fitness(org) = |X - vi|, where vi is the internal value at position i.
     - Analysis:
       - How close to X can orgs get?
       - Could add neutral space around targets?
       - Phenotypic diversity
       - Phylogenetic tree
-      - Solution count 
+      - Solution count
         - A solution is an org that has at least 1 internal value that has reached X
-    - Extension: 
+    - Extension:
       - K numbers, all K internal values need to be X
       - As there are more and more numbers do you lose precision?
       - Add neutral space around targets
 
   - Structured Exploitation Diagnostic - Structured K Values
     - Purpose:
-      - Some problems are structured in such a way where they require approach building block when trying to reach a solution.
+      - Some problems are structured in such a way where they require approach
+        building block when trying to reach a solution.
       - This provides more of a relationship between the orgs internal values.
     - Literature:
       - Exploration and Exploitation in Evolutionary Algorithms: A Survey
-    - ORG Structure: 
+    - ORG Structure:
+      - Organisms are length-K vectors of doubles.
       - K internal values (vector of k values)
         - [v1, v2, ..., vk]
       - Mutations can increase or decrease a specific k value
-      - No instructions required, since org is essentially a bit string 
     - Problem:
-      - As you go from the start (v1), the second value only gets evaluated if it's equal to or greater the first value.
-      - K internal values targeting X.
-      - Need to optimize the first value, then second value, etc.
+      - The environment is represented as K targets, each target _i_ corresponding to
+        position _i_ in organism genomes.
+      - Evaluation:
+        - Starting from the beginning of an organism's genome, the subsequent value
+          is evaluated only if it is greater than or equal to the first value.
+      - Evolution should optimize the first value, then the second, then third,
+        _etc._
       - fitness(org) = |X - v1| + ... + |X - Vj|
         - v1 <= ... <= vj
-      - Take org with minimum error
     - Analysis:
       - See how long the streak of successful internal values grows
       - Phenotypic diversity
@@ -55,79 +62,79 @@ Diagnostics:
   - Ecology Diagnostic - Contradictory K Values
     - Purpose:
       - If any individual organism can only be selected for one of the K values, how many distinct niches can be filled at any point in time?
-    - Literature: 
+    - Literature:
       - STILL LOOKING ._.
-    - ORG Structure: 
+    - ORG Structure:
       - K internal values (vector of k values)
         - [v1, v2, ..., vk]
       - Mutations can increase or decrease a specific k value
       - No instructions required, since org is essentially a bit string
     - Problem:
       - fitness(org, K) = vk- max(vi), where vi is all other traits and i != k
-      - What if vk is the max? 
+      - What if vk is the max?
     - Analysis:
       - Solution count
       - Phenotypic diversity
       - Phylogenetic tree
 
   - Ecology Diagnostic
-    - Purpose: 
+    - Purpose:
       - **default** ecology diagnostic
-    - Literature: 
+    - Literature:
       - STILL LOOKING ._.
-    - ORG Structure: 
+    - ORG Structure:
       - K internal values (vector of K values)
       - Mutations can increase or decrease a specific K value
-      - No instructions required, since org is essentially a bit string    
-    - Problem: 
+      - No instructions required, since org is essentially a bit string
+    - Problem:
       - fitness(org) = min(|X - vi|), where vi is the internal values that minimizes the error
     - Analysis:
       - Solution count
-        - **What does a solution look like?** 
+        - **What does a solution look like?**
       - Phenotypic diversity
       - Phylogenetic tree
 
   - Specialist Diagnostic
     - Purpose:
       - How does the proposed selection scheme deal with specialist preservation?
-    - Literature: 
+    - Literature:
       - STILL LOOKING ._.
-    - ORG Structure: 
+    - ORG Structure:
       - K internal values (vector of k values)
         - [v1, v2, ..., vk]
       - One of the K internal values is a specialist trait vk
       - Mutations can increase or decrease a specific k value
       - No instructions required, since org is essentially a bit string
     - Problem:
-      - fitness(org) = |X - vk| + |X - vj| 
+      - fitness(org) = |X - vk| + |X - vj|
         - vj is the randomly chosen trait to evaluate
-    - Extension: 
+    - Extension:
       - Variant on ecology metric
     - Analysis:
       - Solution count
-        - **What does a solution look like?** 
+        - **What does a solution look like?**
       - Phenotypic diversity
       - Phylogenetic tree
 
   - Bad Hints Diagnostic
     - Purpose:
-      - When dealing with a huge testing space, it can be difficult to know if all test cases are correct. 
-      - How does a selection scheme contend with this challenge. 
-    - Literature: 
+      - When dealing with a huge testing space, it can be difficult to know if all test cases are correct.
+      - How does a selection scheme contend with this challenge.
+    - Literature:
       - STILL LOOKING ._.
-    - ORG Structure: 
+    - ORG Structure:
       - K internal values (vector of k values)
         - [v1, v2, ..., vk]
       - Mutations can increase or decrease a specific k value
       - No instructions required, since org is essentially a bit string
-    - Problem: 
+    - Problem:
       - Emily's box problem? (POSSIBLY)
       - An organism should be be trying to get all of its K internal values to some target
-      - Good hint objective: 
+      - Good hint objective:
         - Take internal value that minimizes, min(|X-v|)
-      - Bad hint objective: 
+      - Bad hint objective:
         - If objective is below 99, give score = 0
-    - Analysis: 
+    - Analysis:
       - How much does a single good hint vs single bad hint change outcomes?
       - Solution count
         - All internal values have reached X.
@@ -138,17 +145,17 @@ Diagnostics:
     - Purpose:
       - When dealing with a huge testing space, it can be difficult to know what test cases are redundant.
       - How does a selection scheme contend with this challenge.
-    - Literature: 
+    - Literature:
       - STILL LOOKING ._.
-    - ORG Structure: 
+    - ORG Structure:
       - K internal values (vector of k values)
         - [v1, v2, ..., vk]
       - Mutations can increase or decrease a specific k value
       - No instructions required, since org is essentially a bit string
-    - Problem: 
-      - User gives us *n*, which stands for the number of times we add the same test case to the test set. 
+    - Problem:
+      - User gives us *n*, which stands for the number of times we add the same test case to the test set.
       - We randomly select a test case and add it *n* times to the test set
-    - Analysis: 
+    - Analysis:
       - How much does a biasing change outcomes?
       - Solution count
         - All internal values reach X
@@ -159,19 +166,19 @@ Diagnostics:
     - Purpose:
       - When dealing with certain problems, the landscape may be deceptive to an organisms exploration.
       - How does a selection scheme contend with this challenge.
-    - Literature: 
+    - Literature:
       - STILL LOOKING ._.
-    - ORG Structure: 
+    - ORG Structure:
       - K internal values (vector of k values).
         - [v1, v2, ..., vk]
       - Mutations can increase or decrease a specific k value
       - No instructions required, since org is essentially a bit string
-    - Problem: 
+    - Problem:
       - Given K and X beforehand, can organisms' reach X for all K internal values
       - Fitness(org, X, vi) = tens place - ones place
-      - Ex, Fitness(org, X, vi) -> vi = 78 -> 70 - 8 = 62 = Fitness(org, X, vi) = 62 
+      - Ex, Fitness(org, X, vi) -> vi = 78 -> 70 - 8 = 62 = Fitness(org, X, vi) = 62
       - If an organism's internal value goes over 100, will do the same process as above
-    - Analysis: 
+    - Analysis:
       - How much does a deceptive landscape affect solutions attempting to reach objective
       - Solution count
       - Phenotypic diversity
@@ -182,19 +189,19 @@ Diagnostics:
     - Purpose:
       - When dealing with data, there may be noise associated with it
       - How does a selection scheme contend with this challenge
-    - Literature: 
+    - Literature:
       - Genetic Algorithms, Tournament Selection, and the Effects of Noise
       - Ton of ML literature on this subject
-    - ORG Structure: 
+    - ORG Structure:
       - K internal values (vector of k values)
         - [v1, v2, ..., vk]
       - Mutations can increase or decrease a specific k value
       - No instructions required, since org is essentially a bit string
-    - Problem: 
+    - Problem:
       - Each internal value will have 5 numbers associated with it
       - These 5 values are generated from N(X,sig) or a Normal Distribution
       - When picking a test case to evaluate organisms on, one of the random 5 numbers will be selected as well
-    - Analysis: 
+    - Analysis:
       - How much does noise affect solutions attempting to reach objective?
       - Solution count
         - All internal values reach X
@@ -204,21 +211,21 @@ Diagnostics:
   - Overfitting diagnostic - Smoothness
     - Purpose:
       - Please help...
-    - Literature: 
+    - Literature:
       - Ton of ML literature on this subject
-    - ORG Structure: 
+    - ORG Structure:
       - K internal values (vector of k values)
         - [v1, v2, ..., vk]
       - Mutations can increase or decrease a specific k value
       - No instructions required, since org is essentially a bit string
-    - Problem: 
+    - Problem:
       - We will define a function before hand, f(x) = x^2 for example
       - Each internal value has a unique value associated with it
       - [v1=1, v2=2, ..., vk=k]
       - f(v1) = f(1) = 1, f(v2) = f(2) = 4, ..., f(k) = f(k) = k^2
       - fitness(org) = sum(f(vi) - g(vi)), for all internal values where f is the ground truth and g is the solution's response
-    - Analysis: 
-      - How much does a multiobjective problem affect solutions attempting to reach objective. 
+    - Analysis:
+      - How much does a multiobjective problem affect solutions attempting to reach objective.
       - Solution count
         - All internal values must match the ground truth
       - Phenotypic diversity
@@ -228,19 +235,19 @@ Diagnostics:
     - Only the highest trait counts & sequentially from there, going forward any traits that are lower than it
     - Purpose:
       - If there are many good places to go from here, can I find the right path?
-    - Literature: 
+    - Literature:
       - STILL LOOKING ._.
-    - ORG Structure: 
+    - ORG Structure:
       - K internal values (vector of k values)
         - [v1, v2, ..., vk]
       - Mutations can increase or decrease a specific k value
       - No instructions required, since org is essentially a bit string
-    - Problem: 
+    - Problem:
       - fitness(org, K, X) = |X - vi| + ... + |X - vk|
         - vi is the internal value that minimizes |X - v|
       - We then sum all internal values to the right
-    - Analysis: 
-      - How much does a problem structure affect solutions attempting to reach objective. 
+    - Analysis:
+      - How much does a problem structure affect solutions attempting to reach objective.
       - Solution count
       - Phenotypic diversity
       - Phylogenetic tree
