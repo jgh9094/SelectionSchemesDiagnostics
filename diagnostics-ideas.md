@@ -158,13 +158,15 @@ Diagnostics:
     - Literature:
       - STILL LOOKING ._.
     - ORG Structure:
+      - Organisms are length-K vectors of doubles (each double representing a trait).
       - K internal values (vector of k values)
         - [v1, v2, ..., vk]
       - Mutations can increase or decrease a specific k value
-      - No instructions required, since org is essentially a bit string
     - Problem:
-      - User gives us *n*, which stands for the number of times we add the same test case to the test set.
-      - We randomly select a test case and add it *n* times to the test set
+      - We will choose a particular test case to bias fitness toward.
+      - Let _n_ be the number of times we duplicate a particular test case in the
+        testing set.
+      - _n_ specifies how biased fitness scores are to the chosen test case.
     - Analysis:
       - How much does a biasing change outcomes?
       - Solution count
