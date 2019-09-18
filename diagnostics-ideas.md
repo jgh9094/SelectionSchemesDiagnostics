@@ -61,17 +61,18 @@ Diagnostics:
 
   - Ecology Diagnostic - Contradictory K Values
     - Purpose:
-      - If any individual organism can only be selected for one of the K values, how many distinct niches can be filled at any point in time?
+      - If any individual organism can only be selected for one of the K values,
+        how many distinct niches can be filled at any point in time?
     - Literature:
       - STILL LOOKING ._.
     - ORG Structure:
+      - Organisms are length-K vectors of doubles.
       - K internal values (vector of k values)
         - [v1, v2, ..., vk]
       - Mutations can increase or decrease a specific k value
-      - No instructions required, since org is essentially a bit string
     - Problem:
-      - fitness(org, K) = vk- max(vi), where vi is all other traits and i != k
-      - What if vk is the max?
+      - Fitness contribution for each trait: fitness(org, K) = vk- max(vi)
+        - where vi is all other traits and i != k
     - Analysis:
       - Solution count
       - Phenotypic diversity
@@ -83,11 +84,13 @@ Diagnostics:
     - Literature:
       - STILL LOOKING ._.
     - ORG Structure:
-      - K internal values (vector of K values)
+      - Organisms are length-K vectors of doubles.
       - Mutations can increase or decrease a specific K value
-      - No instructions required, since org is essentially a bit string
     - Problem:
-      - fitness(org) = min(|X - vi|), where vi is the internal values that minimizes the error
+      - Same as harsh ecology diagnostic above, but no trait can take on a score
+        below zero.
+        - i.e., organisms only receive fitness from their maximum trait value; all
+          other traits are given a score of zero (instead of a negative value)
     - Analysis:
       - Solution count
         - **What does a solution look like?**
