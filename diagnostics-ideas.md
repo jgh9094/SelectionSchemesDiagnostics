@@ -181,15 +181,16 @@ Diagnostics:
     - Literature:
       - STILL LOOKING ._.
     - ORG Structure:
+      - Organisms are length-K vectors of doubles (each double representing a trait).
       - K internal values (vector of k values).
         - [v1, v2, ..., vk]
       - Mutations can increase or decrease a specific k value
-      - No instructions required, since org is essentially a bit string
     - Problem:
-      - Given K and X beforehand, can organisms' reach X for all K internal values
-      - Fitness(org, X, vi) = tens place - ones place
-      - Ex, Fitness(org, X, vi) -> vi = 78 -> 70 - 8 = 62 = Fitness(org, X, vi) = 62
-      - If an organism's internal value goes over 100, will do the same process as above
+      - Version 1
+        - Given K and X beforehand, can organisms reach X for all K internal values?
+        - Fitness(org, X, vi) = tens place - ones place
+          - e.g., let Xi = 100, trait _i_ = 78. Fitness for trait _i_ = 70 - 8 = 62
+        - If an organism's internal value goes over 100, will do the same process as above
     - Analysis:
       - How much does a deceptive landscape affect solutions attempting to reach objective
       - Solution count
