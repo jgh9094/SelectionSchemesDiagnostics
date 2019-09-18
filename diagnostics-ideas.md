@@ -126,18 +126,24 @@ Diagnostics:
       - How does a selection scheme contend with this challenge.
     - Literature:
       - STILL LOOKING ._.
+      - Emily's GPTP paper looking at Eco-EA, lexicase, etc selection schemes in
+        context of bad hints.
     - ORG Structure:
+      - Organisms are length-K vectors of doubles (each double representing a trait).
       - K internal values (vector of k values)
         - [v1, v2, ..., vk]
       - Mutations can increase or decrease a specific k value
-      - No instructions required, since org is essentially a bit string
     - Problem:
-      - Emily's box problem? (POSSIBLY)
-      - An organism should be be trying to get all of its K internal values to some target
-      - Good hint objective:
-        - Take internal value that minimizes, min(|X-v|)
-      - Bad hint objective:
-        - If objective is below 99, give score = 0
+      - Extension of exploitation diagnostic.
+      - An organism should be be trying to get each of its K internal values to
+        a target.
+      - We will add hints (good, bad, or neutral) to our fitness evaluation.
+      - Good hints:
+        - Aggregate fitness (sum of fitness scores across all traits) as a 'hint'
+          trait.
+      - Bad hints:
+        - 'hint' trait: Sum of error across all traits. Maximizing this contradicts
+          global fitness maximum.
     - Analysis:
       - How much does a single good hint vs single bad hint change outcomes?
       - Solution count
