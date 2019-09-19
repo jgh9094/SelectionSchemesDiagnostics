@@ -9,7 +9,7 @@
   - [Ecology Diagnostic - Contradictory K Values](#ecology-diagnostic---contradictory-k-values)
   - [Ecology Diagnostic](#ecology-diagnostic)
   - [Specialist Diagnostic](#specialist-diagnostic)
-  - [Bad Hints Diagnostic](#bad-hints-diagnostic)
+  - [Hints Diagnostic](#hints-diagnostic)
   - [Bias diagnostic](#bias-diagnostic)
   - [Deceptive landscape](#deceptive-landscape)
   - [Overfitting diagnostic - Noise](#overfitting-diagnostic---noise)
