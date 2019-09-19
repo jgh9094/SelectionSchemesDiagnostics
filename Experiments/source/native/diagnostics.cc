@@ -29,10 +29,5 @@ int main(int argc, char* argv[])
             << std::endl;
 
   DiaWorld world(config);
-  for (size_t ud = 0; ud < config.MAX_GENS(); ud++) {
-    world.Update();
-    std::cout << "UD: " << ud
-              << "  NumOrgs=" << world.GetNumOrgs()
-              << std::endl;
-  }
+
 }

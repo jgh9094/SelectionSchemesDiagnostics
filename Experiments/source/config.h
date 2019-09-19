@@ -12,6 +12,7 @@ EMP_BUILD_CONFIG( DiaWorldConfig,
   GROUP(ENVIRONMENT, "How should the enviorment be set up?"),
   VALUE(TARGET,         double,     100.0,   "A predator cannot consume anything propotionately smaller than this."),
   VALUE(K_INTERNAL,     size_t,     10,      "How many internal values should each org have?"),
+  VALUE(SELECTION,      size_t,     0,       "Which selection are we doing? \n0: Tournament\n1: Lexicase\n2: Cohort Lexicase\n3: Down Sampled Lexicase"),
   VALUE(DIAGNOSTIC,     size_t,     0,       "Which diagnostic are we doing? \n0: Exploitation\n1: Structured Exploitation\n2: Ecology Diagnostic - Contradictory K Values" 
                                               "\n3: Ecology Diagnostic\n4: Specialist\n5: Hints\n6: Bias\n7: Deceptive\n8: Overfitting - Noise\n9: Exploration"),
   
