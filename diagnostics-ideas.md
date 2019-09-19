@@ -109,7 +109,7 @@ Diagnostics:
       - Phenotypic diversity
       - Phylogenetic tree
 
-  - Bad Hints Diagnostic
+  - Hints Diagnostic
     - Purpose:
       - When dealing with a huge testing space, it can be difficult to know if all test cases are correct. 
       - How does a selection scheme contend with this challenge. 
@@ -124,7 +124,7 @@ Diagnostics:
       - Emily's box problem? (POSSIBLY)
       - An organism should be be trying to get all of its K internal values to some target
       - Good hint objective: 
-        - Take internal value that minimizes, min(|X-v|)
+        - Sum up all the errors, |X - v1| + ... + |X - vK|
       - Bad hint objective: 
         - If objective is below 99, give score = 0
     - Analysis: 
