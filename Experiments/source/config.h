@@ -20,8 +20,10 @@ EMP_BUILD_CONFIG( DiaWorldConfig,
   GROUP(TOURNAMENT, "What are the configurations for tournament selection."),
   VALUE(TOUR_SIZE,      size_t,     7,      "How many organimsms are in a tournament?"),
   
-  GROUP(MUTATIONS, "Various mutation rates for SignalGP Brains"),
+  GROUP(MUTATIONS, "Various mutation rates for organisms"),
   VALUE(MUTATE_VAL,       double,     0.001,        "Probability of instructions being mutated"),
+  VALUE(MEAN,             double,     0.0,          "Mean of Gaussian Distribution for mutations"),
+  VALUE(STD,              double,     2.0,         "Standard Deviation of Gaussian Distribution for mutations"),
 
   GROUP(OUTPUT, "Output rates for OpenWorld"),
   VALUE(PRINT_INTERVAL,   size_t,     100,          "How many updates between prints?")
