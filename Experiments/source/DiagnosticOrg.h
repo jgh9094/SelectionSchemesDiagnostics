@@ -72,7 +72,6 @@ double DiaOrg::TotalSumScores() {
   emp_assert(total == 0.0, total);
 
   // Sum up the errors!
-  double 
   for(size_t i = 0; i < K; ++i) {
     // Make sure we have evaluated this internal value
     emp_assert(score[i] != -1.0, score[i]);
