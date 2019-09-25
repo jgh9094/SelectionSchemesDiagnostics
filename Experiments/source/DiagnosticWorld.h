@@ -56,6 +56,7 @@ class DiaWorld : public emp::World<DiaOrg> {
     void SetOnUpdate();             ///< Set up world configurations        
     void SetMutations();            ///< Set up the mutations parameters
     void SetSelectionFun();         ///< Set up the selection function
+    void SetOnOffspringReady();     ///< Set up the OnOffspringReady function
     void InitializeWorld();         ///< Set initial population of orgs
 
     ///< Tournament Selection Set Up
@@ -69,7 +70,7 @@ class DiaWorld : public emp::World<DiaOrg> {
     void Evaluate();                ///< Evaluate all orgs on individual test cases!
     ids_t Selection();              ///< Call when its time to select parents
     size_t Mutate();                ///< Call when we need to mutate an organism
-    void Births();                  ///< Call when its time to produce offspring
+    void Births(ids_t parents);                  ///< Call when its time to produce offspring
 
 
     /* Functions for gathering data */
@@ -80,18 +81,23 @@ class DiaWorld : public emp::World<DiaOrg> {
 void DiaWorld::InitialSetup() {     ///< Do all the initial set up
   SetMutations();
   SetSelectionFun();
+  SetOnOffspringReady();
   InitializeWorld();
   SetOnUpdate();
 }  
 
 void DiaWorld::SetOnUpdate() {      ///< Set up world configurations
   OnUpdate([this](size_t) {
+    std::cerr << "Updating!" << std::endl;
     // Evaluate all organisms
     Evaluate();
+    std::cerr << "Finished Evluating!" << std::endl;
     // Select parents for next gen
-    Selection();
+    auto parents = Selection();
+    std::cerr << "Finished Selecting parents!" << std::endl;
     // Give birth to the next gen & mutate
-    Births();
+    Births(parents);
+    std::cerr << "Finished Births!" << std::endl;
   });
 }
     
@@ -109,7 +115,9 @@ void DiaWorld::SetMutations() {     ///< Set up the mutations parameters
       // Can we do a mutation?
       if(random_ptr->P(config.MUTATE_VAL())) {
         // Apply mutation from normal distribution
-        genome[i] += random_ptr->GetRandNormal(config.MEAN(), config.STD());
+        double evo = random_ptr->GetRandNormal(config.MEAN(), config.STD());
+        // std::cerr << "DOING MUT=" << evo << "+" << genome[i] << std::endl;
+        genome[i] += evo;
       }
     }
 
@@ -131,8 +139,21 @@ void DiaWorld::SetSelectionFun() {  ///< Set up the selection function
   }
 }
 
-void DiaWorld::InitializeWorld() {  ///< Set initial population of orgs
+void DiaWorld::SetOnOffspringReady() {  ///< Set up the OnOffspringReady function
+  // Create lambda function
+  OnOffspringReady([this](DiaOrg & org, size_t parent_pos) {
+    // Mutate organism if possible
+    if(config.MUTATE()) {
+      DoMutationsOrg(org);
+      org.Reset(config.K_INTERNAL());
+    }
+  });
+}
 
+void DiaWorld::InitializeWorld() {  ///< Set initial population of orgs
+  // Fill the workd with requested population size!
+  DiaOrg org(config.K_INTERNAL());
+  Inject(org.GetGenome(), config.POP_SIZE());
 }
 
 ///< Tournament Selection Set Up
@@ -202,6 +223,7 @@ void DiaWorld::TournamentSelection() {
       for(auto i : tour) {
         // Get org fitness
         double score = fitness(GetOrg(i));
+        std::cerr << "Org(" << i << ")=" << score << std::endl;
 
         // Check if we have seen this score
         auto it = scores.find(score);
@@ -217,7 +239,7 @@ void DiaWorld::TournamentSelection() {
       }
 
       // Select a parent and store for reproduction
-      size_t winner = emp::Choose(*random_ptr, scores.rbegin()->second.size(), 1)[0];
+      size_t winner = emp::Choose(*random_ptr, scores.rend()->second.size(), 1)[0];
       parents.push_back(scores.rbegin()->second[winner]);
     }
     return parents;
@@ -228,14 +250,14 @@ void DiaWorld::TournamentExploit(){
   std::cerr << "Standard Exploitation" << std::endl;
   fitness = [this] (DiaOrg & org) {
     // Return the sum of errors!
-    return org.TotalSumScores();
+    return org.GetTotal();
   };
 }
 
 
 /* Functions ran during experiment */
 
-void DiaWorld::Evaluate() {                ///< Evaluate all orgs on individual test cases!
+void DiaWorld::Evaluate() {          ///< Evaluate all orgs on individual test cases!
   //Make sure pop is the correct size
   emp_assert(pop.size() == config.POP_SIZE(), pop.size());
   emp_assert(target.size() == config.K_INTERNAL(), target.size());
@@ -243,26 +265,39 @@ void DiaWorld::Evaluate() {                ///< Evaluate all orgs on individual 
   // Loop through world and score orgs
   for(size_t pos = 0; pos < pop.size(); pos++) {
     // Get org and calculate score
+    std::cerr << "ORG(" << pos << ")" << std::endl;
     auto & org = *pop[pos];
+    org.Reset(config.K_INTERNAL());
+    // std::cerr << "BEFORE" << std::endl;
+    // org.PrintStats();
 
-    // Loop through ground truth vector
+    // Loop through ground truth vector and score!
     for(size_t i = 0; i < target.size(); i++) {
       // Calculate individual values
       org.CalculateScore(i, target[i]);
     }
+    // Sum up all the error for the orgs
+    org.TotalSumScores();
+
+    std::cerr << "AFTER" << std::endl;
+    org.PrintStats();
   }
 }
 
-ids_t DiaWorld::Selection() {              ///< Call when its time to select parents
+ids_t DiaWorld::Selection() {       ///< Call when its time to select parents
   return select();
 }
-size_t DiaWorld::Mutate() {                ///< Call when we need to mutate an organism
+
+size_t DiaWorld::Mutate() {         ///< Call when we need to mutate an organism
 
   return 0;
 }
 
-void DiaWorld::Births() {                  ///< Call when its time to produce offspring
-
+void DiaWorld::Births(ids_t parents) {            ///< Call when its time to produce offsprings from parents
+  // Go through the parent ids and give birth!
+  for(auto & id : parents) {
+    DoBirth(GetGenomeAt(id), id);
+  }
 }
 
 #endif
