@@ -29,5 +29,12 @@ int main(int argc, char* argv[])
             << std::endl;
 
   DiaWorld world(config);
+  std::cerr << "Beginning Experiment" << std::endl;
+  for(size_t i = 0; i < config.MAX_GENS(); i++) {
+    std::cerr << "------------------------------------------------" << std::endl;
+    std::cerr << "Gen=" << i << std::endl;
+    world.Update();
+    std::cerr << "------------------------------------------------" << std::endl;
+  }
 
 }
