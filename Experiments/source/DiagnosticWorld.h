@@ -21,7 +21,7 @@
 using ids_t = emp::vector<size_t>;
 using fit_fun = std::function<double(DiaOrg &)>; 
 using sel_fun = std::function<ids_t()>;
-using tar_t = std::vector<double>;
+using tar_t = emp::vector<double>;
 
 class DiaWorld : public emp::World<DiaOrg> {
 
@@ -74,11 +74,18 @@ class DiaWorld : public emp::World<DiaOrg> {
 
 
     /* Functions for gathering data */
+
+    void GatherData();             ///< Will call all other functions to gather data
+    void CountSolution();          ///< Given some threshold, how many solutions do we have?
+    void AverageError();           ///< Average error on a k-val, per population, per update
+    void MinimumError();           ///< Get best error per k-val
 };
 
 /* Functions for initial experiment set up */
 
 void DiaWorld::InitialSetup() {     ///< Do all the initial set up
+  Reset();
+  SetPopStruct_Mixed(true);
   SetMutations();
   SetSelectionFun();
   SetOnOffspringReady();
@@ -88,16 +95,12 @@ void DiaWorld::InitialSetup() {     ///< Do all the initial set up
 
 void DiaWorld::SetOnUpdate() {      ///< Set up world configurations
   OnUpdate([this](size_t) {
-    std::cerr << "Updating!" << std::endl;
     // Evaluate all organisms
     Evaluate();
-    std::cerr << "Finished Evluating!" << std::endl;
     // Select parents for next gen
     auto parents = Selection();
-    std::cerr << "Finished Selecting parents!" << std::endl;
     // Give birth to the next gen & mutate
     Births(parents);
-    std::cerr << "Finished Births!" << std::endl;
   });
 }
     
@@ -106,7 +109,6 @@ void DiaWorld::SetMutations() {     ///< Set up the mutations parameters
   SetMutFun([this](DiaOrg & org, emp::Random & random) {
     // Get org genome!
     auto & genome = org.GetGenome();
-
     // Check that genome is correct length
     emp_assert(genome.size() == config.K_INTERNAL(), genome.size());
 
@@ -116,7 +118,6 @@ void DiaWorld::SetMutations() {     ///< Set up the mutations parameters
       if(random_ptr->P(config.MUTATE_VAL())) {
         // Apply mutation from normal distribution
         double evo = random_ptr->GetRandNormal(config.MEAN(), config.STD());
-        // std::cerr << "DOING MUT=" << evo << "+" << genome[i] << std::endl;
         genome[i] += evo;
       }
     }
@@ -209,6 +210,7 @@ void DiaWorld::TournamentFitnessFun() {
 
 void DiaWorld::TournamentSelection() {
   std::cerr << "Tournament Selection" << std::endl;
+  emp_assert(config.TOUR_SIZE() < config.POP_SIZE(), config.TOUR_SIZE());
   // Setting up tournament selection algorithm
   select = [this] () {
     // Holds all ids of parents selected for reproduction
@@ -223,7 +225,6 @@ void DiaWorld::TournamentSelection() {
       for(auto i : tour) {
         // Get org fitness
         double score = fitness(GetOrg(i));
-        std::cerr << "Org(" << i << ")=" << score << std::endl;
 
         // Check if we have seen this score
         auto it = scores.find(score);
@@ -237,10 +238,9 @@ void DiaWorld::TournamentSelection() {
           scores[score].push_back(i);
         }
       }
-
       // Select a parent and store for reproduction
-      size_t winner = emp::Choose(*random_ptr, scores.rend()->second.size(), 1)[0];
-      parents.push_back(scores.rbegin()->second[winner]);
+      size_t winner = emp::Choose(*random_ptr, scores.begin()->second.size(), 1)[0];
+      parents.push_back(scores.begin()->second[winner]);
     }
     return parents;
   };
@@ -265,11 +265,8 @@ void DiaWorld::Evaluate() {          ///< Evaluate all orgs on individual test c
   // Loop through world and score orgs
   for(size_t pos = 0; pos < pop.size(); pos++) {
     // Get org and calculate score
-    std::cerr << "ORG(" << pos << ")" << std::endl;
     auto & org = *pop[pos];
     org.Reset(config.K_INTERNAL());
-    // std::cerr << "BEFORE" << std::endl;
-    // org.PrintStats();
 
     // Loop through ground truth vector and score!
     for(size_t i = 0; i < target.size(); i++) {
@@ -278,19 +275,11 @@ void DiaWorld::Evaluate() {          ///< Evaluate all orgs on individual test c
     }
     // Sum up all the error for the orgs
     org.TotalSumScores();
-
-    std::cerr << "AFTER" << std::endl;
-    org.PrintStats();
   }
 }
 
 ids_t DiaWorld::Selection() {       ///< Call when its time to select parents
   return select();
-}
-
-size_t DiaWorld::Mutate() {         ///< Call when we need to mutate an organism
-
-  return 0;
 }
 
 void DiaWorld::Births(ids_t parents) {            ///< Call when its time to produce offsprings from parents
@@ -300,4 +289,21 @@ void DiaWorld::Births(ids_t parents) {            ///< Call when its time to pro
   }
 }
 
+
+/* Functions for gathering data */
+void DiaWorld::GatherData() {               ///< Will call all other functions to gather data
+
+}
+
+void DiaWorld::CountSolution() {            ///< Given some threshold, how many solutions do we have?
+
+}
+
+void DiaWorld::AverageError() {             ///< Average error on a k-val, per population, per update
+
+}
+
+void DiaWorld::MinimumError() {             ///< Get best error per k-val
+
+}
 #endif
