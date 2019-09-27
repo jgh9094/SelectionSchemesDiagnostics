@@ -43,6 +43,7 @@ class DiaOrg {
     const genome_t & GetConstGenome() const { return genome; }
     genome_t & GetGenome() { return genome; }
     double GetTotal() const { emp_assert(total != -1.0); return total; }
+    double GetScore(size_t i) const { emp_assert(score[i] != -1.0, score[i]); return score[i]; }
 
     /* Setters */
     void SetGenome(genome_t g) { genome = g; }
