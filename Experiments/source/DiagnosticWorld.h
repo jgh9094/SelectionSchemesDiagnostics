@@ -8,6 +8,7 @@
 #include <functional>
 #include <utility>
 #include <cmath>
+#include <fstream>
 
 ///< Empirical headers
 #include "Evolve/World.h"
@@ -31,6 +32,9 @@ class DiaWorld : public emp::World<DiaOrg> {
     sel_fun select;               ///< Experiment selection fucntion
     ids_t pop_ids;                ///< Population IDs for randomly picking from the world
     tar_t target;                 ///< Targets that organisms are trying to reach
+    std::ofstream sol_cnt;        ///< Track data regarding solution count
+    std::ofstream avg_err;        ///< Track the average error per internal val per update
+    std::ofstream min_err;        ///> Track the minimum error per internal val per update
 
   public:
     DiaWorld(DiaWorldConfig & _config) : config(_config) {      ///< Constructor  
@@ -48,6 +52,12 @@ class DiaWorld : public emp::World<DiaOrg> {
       else {
 
       }
+    }
+
+    ~DiaWorld() {
+      sol_cnt.close();
+      avg_err.close();
+      min_err.close();
     }
 
     /* Functions for initial experiment set up */
@@ -75,10 +85,11 @@ class DiaWorld : public emp::World<DiaOrg> {
 
     /* Functions for gathering data */
 
-    void GatherData();             ///< Will call all other functions to gather data
-    void CountSolution();          ///< Given some threshold, how many solutions do we have?
-    void AverageError();           ///< Average error on a k-val, per population, per update
-    void MinimumError();           ///< Get best error per k-val
+    void SetCSVHeaders();                   ///< Set up all headers of csv files!
+    void GatherData(size_t up);             ///< Will call all other functions to gather data
+    void CountSolution(size_t up);          ///< Given some threshold, how many solutions do we have?
+    void AverageError(size_t up);           ///< Average error on a k-val, per population, per update
+    void MinimumError(size_t up);           ///< Get best error per k-val
 };
 
 /* Functions for initial experiment set up */
@@ -91,12 +102,15 @@ void DiaWorld::InitialSetup() {     ///< Do all the initial set up
   SetOnOffspringReady();
   InitializeWorld();
   SetOnUpdate();
+  SetCSVHeaders();
 }  
 
 void DiaWorld::SetOnUpdate() {      ///< Set up world configurations
   OnUpdate([this](size_t) {
     // Evaluate all organisms
     Evaluate();
+    // Gather relavant data!
+    GatherData(GetUpdate());
     // Select parents for next gen
     auto parents = Selection();
     // Give birth to the next gen & mutate
@@ -291,19 +305,142 @@ void DiaWorld::Births(ids_t parents) {            ///< Call when its time to pro
 
 
 /* Functions for gathering data */
-void DiaWorld::GatherData() {               ///< Will call all other functions to gather data
 
+void DiaWorld::SetCSVHeaders() {                    ///< Set up all headers of csv files!
+  // Initialize data trackers
+  sol_cnt.open("sol_cnt.csv");
+  avg_err.open("avg_err.csv");
+  min_err.open("min_err.csv");
+
+  // Create header
+  std::string head = "Update,";
+  for(size_t i = 0; i < config.K_INTERNAL(); i++) {
+    std::string cur; 
+    if(i < config.K_INTERNAL()-1) {
+      cur = "val-" + std::to_string(i) + ",";
+      head += cur;
+    }
+    else {
+      cur = "val-" + std::to_string(i) + "\n";
+      head += cur; 
+    }
+  }
+
+  sol_cnt << head;
+  avg_err << head;
+  min_err << head;
 }
 
-void DiaWorld::CountSolution() {            ///< Given some threshold, how many solutions do we have?
-
+void DiaWorld::GatherData(size_t up) {               ///< Will call all other functions to gather data
+  CountSolution(up);
+  AverageError(up);
+  MinimumError(up);
 }
 
-void DiaWorld::AverageError() {             ///< Average error on a k-val, per population, per update
+void DiaWorld::CountSolution(size_t up) {            ///< Given some threshold, how many solutions do we have?
+  // Hold solution counts 
+  emp::vector<size_t> record;
+  record.resize(config.K_INTERNAL(), 0);
+  // Iterate through the internal values
+  for(size_t k = 0; k < config.K_INTERNAL(); k++) {
+    // Iterate through the pop per internal val
+    for(size_t i = 0; i < pop.size(); i++) {
+      // Get org and its score on the ith internal k val
+      DiaOrg & org = *pop[i];
+      double score = org.GetScore(k);
 
+      // Check if it meets the threshold
+      if(score <= config.SOLUTION_THRESH()) {
+        record[k]++;
+      }
+    }
+  }
+
+  // Write the data to the csv file!
+  std::string update = std::to_string(up) + ",";
+  for(size_t i = 0; i < config.K_INTERNAL(); i++) {
+    std::string cur; 
+    if(i < config.K_INTERNAL()-1) {
+      cur = std::to_string(record[i]) + ",";
+      update += cur;
+    }
+    else {
+      cur = std::to_string(record[i]) + "\n";
+      update += cur; 
+    }
+  }
+
+  sol_cnt << update; 
 }
 
-void DiaWorld::MinimumError() {             ///< Get best error per k-val
+void DiaWorld::AverageError(size_t up) {             ///< Average error on a k-val, per population, per update
+  // Hold solution counts 
+  emp::vector<double> record;
+  record.resize(config.K_INTERNAL(), 0.0);
+  // Iterate through the internal values
+  for(size_t k = 0; k < config.K_INTERNAL(); k++) {
+    // Iterate through the pop per internal val
+    for(size_t i = 0; i < pop.size(); i++) {
+      // Get org and its score on the ith internal k val
+      DiaOrg & org = *pop[i];
+      double score = org.GetScore(k);
+      // Add to records
+      record[k] += score;
+    }
+  }
 
+  // Divide all scores by the pop size!
+  for(size_t i = 0; i < config.K_INTERNAL(); i++) { record[i] /= (double) config.POP_SIZE();}
+
+  // Write all data to the csv
+  std::string update = std::to_string(up) + ",";
+  for(size_t i = 0; i < config.K_INTERNAL(); i++) {
+    std::string cur; 
+    if(i < config.K_INTERNAL()-1) {
+      cur = std::to_string(record[i]) + ",";
+      update += cur;
+    }
+    else {
+      cur = std::to_string(record[i]) + "\n";
+      update += cur; 
+    }
+  }
+
+  avg_err << update; 
+}
+
+void DiaWorld::MinimumError(size_t up) {             ///< Get best error per k-val
+  // Hold solution counts 
+  emp::vector<double> record;
+  record.resize(config.K_INTERNAL(), 100000.0);
+  // Iterate through the internal values
+  for(size_t k = 0; k < config.K_INTERNAL(); k++) {
+    // Iterate through the pop per internal val
+    for(size_t i = 0; i < pop.size(); i++) {
+      // Get org and its score on the ith internal k val
+      DiaOrg & org = *pop[i];
+      double score = org.GetScore(k);
+      // Check if we find a smaller error!
+      if(score < record[k]) {
+        record[k] = score;
+      }
+    }
+  }
+
+  // Write all data to the csv
+  std::string update = std::to_string(up) + ",";
+  for(size_t i = 0; i < config.K_INTERNAL(); i++) {
+    std::string cur; 
+    if(i < config.K_INTERNAL()-1) {
+      cur = std::to_string(record[i]) + ",";
+      update += cur;
+    }
+    else {
+      cur = std::to_string(record[i]) + "\n";
+      update += cur; 
+    }
+  }
+
+  min_err << update; 
 }
 #endif
