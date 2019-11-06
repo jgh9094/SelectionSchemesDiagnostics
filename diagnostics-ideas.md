@@ -1,12 +1,6 @@
 
 # Ideas for Diagnostics
 
-<script type="text/javascript" async src="//cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
-
-formula1:
-$$n = x$$
-
 <!-- TOC -->
 
 - [Ideas for Diagnostics](#ideas-for-diagnostics)
@@ -41,14 +35,14 @@ $$n = x$$
 - ORG Structure:
   - Organisms are length-K vectors of doubles.
   - K internal traits (vector of k traits).
-    - [$v$<sub>1</sub>, $v$<sub>2</sub>, ..., $v$<sub>k</sub>]
+    - [v<sub>1</sub>, v<sub>2</sub>, ..., v<sub>k</sub>]
   - Mutations can increase or decrease a specific K value.
 - Problem:
   - The environment is represented as K targets, each target _i_ corresponding to
     position _i_ in organism genomes.
   - Goal: to maximize fitness, each position in a genome should be as close
     as possible to the associated target _i_.
-  - fitness(org, $i$) = |X - $v$<sub>$i$</sub>|, where $v$<sub>$i$</sub> is the internal value at position $i$.
+  - fitness(org, i) = |X - v<sub>i</sub>|, where v<sub>i</sub> is the internal value at position i.
 - Analysis:
   - How close to X can orgs get?
   - Could add neutral space around targets?
@@ -67,13 +61,13 @@ $$n = x$$
   - Some problems are structured in such a way where they require approach
     building block when trying to reach a solution.
   - This provides more of a relationship between the orgs internal traits.
-  - We want the organisms to optimize there traits from start ($v$<sub>$1$</sub>) to end ($v$<sub>$k$</sub>)
+  - We want the organisms to optimize there traits from start (v<sub>1</sub>) to end (v<sub>k</sub>)
 - Literature:
   - Exploration and Exploitation in Evolutionary Algorithms: A Survey
 - ORG Structure:
   - Organisms are length-K vectors of doubles.
   - K internal traits (vector of k traits)
-    - [$v$<sub>1</sub>, $v$<sub>2</sub>, ..., $v$<sub>k</sub>]
+    - [v<sub>1</sub>, v<sub>2</sub>, ..., v<sub>k</sub>]
   - Mutations can increase or decrease a specific k value
 - Problem:
   - The environment is represented as K targets, each target _i_ corresponding to
@@ -83,12 +77,12 @@ $$n = x$$
       is evaluated only if it is greater than or equal to the first value.
   - Evolution should optimize the first value, then the second, then third,
     _etc._
-  - fitness(org) = [$f$<sub>1</sub>, $f$<sub>2</sub>, $f$<sub>3</sub>, ..., $f$<sub>K</sub>]
-    - for all $f$<sub>$i$</sub> in fitness(org): 
-      - $f$<sub>1</sub> = |X - $v$<sub>1</sub>|
-      - $f$<sub>$j$</sub> $(\forall j \in [2,K])$:
-        - if $f$<sub>$j-1$</sub> $\le$ |X - $v$<sub>$j$</sub>|, $\Longrightarrow$ $f$<sub>j</sub> = |X - $v$<sub>$j$</sub>|
-        - else $\Longrightarrow$> $f$<sub> j </sub> = MAX_ERROR
+  - fitness(org) = [f<sub>1</sub>, f<sub>2</sub>, f<sub>3</sub>, ..., f<sub>K</sub>]
+    - for all f<sub>i</sub> in fitness(org): 
+      - f<sub>1</sub> = |X - v<sub>1</sub>|
+      - f<sub>j</sub> (for all j in [2,K]):
+        - if f<sub>j-1</sub> <= |X - v<sub>j</sub>|, -> f<sub>j</sub> = |X - v<sub>j</sub>|
+        - else -> f<sub> j </sub> = MAX_ERROR
 - Analysis:
   - See how long the streak of successful internal traits grows
   - Phenotypic diversity
@@ -105,11 +99,11 @@ $$n = x$$
 - ORG Structure:
   - Organisms are length-K vectors of doubles.
   - K internal traits (vector of k traits)
-    - [$v$<sub>1</sub>, $v$<sub>2</sub>, ..., $v$<sub>k</sub>]
+    - [v<sub>1</sub>, v<sub>2</sub>, ..., v<sub>k</sub>]
   - Mutations can increase or decrease a specific k value
 - Problem:
-  - Fitness contribution for each trait: fitness(org, K) = $v$<sub>k</sub>- max($v$<sub>$i$</sub>)
-    - where $v$<sub>$i$</sub> is all other traits and $i$ != k
+  - Fitness contribution for each trait: fitness(org, K) = v<sub>k</sub>- max(v<sub>i</sub>)
+    - where v<sub>i</sub> is all other traits and i != k
 - Analysis:
   - Solution count
   - Phenotypic diversity
@@ -144,8 +138,8 @@ $$n = x$$
 - ORG Structure:
   - Organisms are length-K vectors of doubles (each double representing a trait).
   - K internal traits (vector of k traits)
-    - [$v$<sub>1</sub>, $v$<sub>2</sub>, ..., $v$<sub>k</sub>]
-  - One of the K internal traits is a specialist trait ($v$<sub>k</sub>)
+    - [v<sub>1</sub>, v<sub>2</sub>, ..., v<sub>k</sub>]
+  - One of the K internal traits is a specialist trait (v<sub>k</sub>)
   - Mutations can increase or decrease a specific k value
 - Problem:
   - Variant on the ecology diagnostic.
@@ -171,7 +165,7 @@ $$n = x$$
 - ORG Structure:
   - Organisms are length-K vectors of doubles (each double representing a trait).
   - K internal traits (vector of k traits)
-    - [$v$<sub>1</sub>, $v$<sub>2</sub>, ..., $v$<sub>k</sub>]
+    - [v<sub>1</sub>, v<sub>2</sub>, ..., v<sub>k</sub>]
   - Mutations can increase or decrease a specific k value
 - Problem:
   - Extension of exploitation diagnostic.
@@ -201,7 +195,7 @@ $$n = x$$
 - ORG Structure:
   - Organisms are length-K vectors of doubles (each double representing a trait).
   - K internal traits (vector of k traits)
-    - [$v$<sub>1</sub>, $v$<sub>2</sub>, ..., $v$<sub>k</sub>]
+    - [v<sub>1</sub>, v<sub>2</sub>, ..., v<sub>k</sub>]
   - Mutations can increase or decrease a specific k value
 - Problem:
   - We will choose a particular test case to bias fitness toward.
@@ -225,12 +219,12 @@ $$n = x$$
 - ORG Structure:
   - Organisms are length-K vectors of doubles (each double representing a trait).
   - K internal traits (vector of k traits).
-    - [$v$<sub>1</sub>, $v$<sub>2</sub>, ..., $v$<sub>k</sub>]
+    - [v<sub>1</sub>, v<sub>2</sub>, ..., v<sub>k</sub>]
   - Mutations can increase or decrease a specific k value
 - Problem:
   - Version 1
     - Given K and X beforehand, can organisms reach X for all K internal traits?
-    - Fitness(org, X, $v$<sub>$i$</sub>) = tens place - ones place
+    - Fitness(org, X, v<sub>i</sub>) = tens place - ones place
       - e.g., let Xi = 100, trait _i_ = 78. Fitness for trait _i_ = 70 - 8 = 62
     - If an organism's internal value goes over 100, will do the same process as above
 - Analysis:
@@ -251,7 +245,7 @@ $$n = x$$
 - ORG Structure:
   - Organisms are length-K vectors of doubles (each double representing a trait).
   - K internal traits (vector of k traits)
-    - [$v$<sub>1</sub>, $v$<sub>2</sub>, ..., $v$<sub>k</sub>]
+    - [v<sub>1</sub>, v<sub>2</sub>, ..., v<sub>k</sub>]
   - Mutations can increase or decrease a specific k value
 - Problem:
   - Instead of having 1 test for each trait we will have _n_ tests for each
@@ -275,15 +269,15 @@ $$n = x$$
 - ORG Structure:
   - Organisms are length-K vectors of doubles (each double representing a trait).
   - K internal traits (vector of k traits)
-    - [$v$<sub>1</sub>, $v$<sub>2</sub>, ..., $v$<sub>k</sub>]
+    - [v<sub>1</sub>, v<sub>2</sub>, ..., v<sub>k</sub>]
   - Mutations can increase or decrease a specific k value
   - No instructions required, since org is essentially a bit string
 - Problem:
   - We will define a function before hand, f(x) = x^2 for example
   - Each internal value has a unique value associated with it
-  - [$v$<sub>1</sub>=1, $v$<sub>2</sub>=2, ..., $v$<sub>k</sub>=k]
-  - f($v$<sub>1</sub>) = f(1) = 1, f($v$<sub>2</sub>) = f(2) = 4, ..., f(k) = f(k) = k^2
-  - fitness(org) = sum(f($v$<sub>$i$</sub>) - g($v$<sub>$i$</sub>)), for all internal traits where f is the ground truth and g is the solution's response
+  - [v<sub>1</sub>=1, v<sub>2</sub>=2, ..., v<sub>k</sub>=k]
+  - f(v<sub>1</sub>) = f(1) = 1, f(v<sub>2</sub>) = f(2) = 4, ..., f(k) = f(k) = k^2
+  - fitness(org) = sum(f(v<sub>i</sub>) - g(v<sub>i</sub>)), for all internal traits where f is the ground truth and g is the solution's response
 - Analysis:
   - How much does a multiobjective problem affect solutions attempting to reach objective.
   - Solution count
@@ -301,12 +295,12 @@ $$n = x$$
 - ORG Structure:
   - - Organisms are length-K vectors of doubles (each double representing a trait).
   - K internal traits (vector of k traits)
-    - [$v$<sub>1</sub>, $v$<sub>2</sub>, ..., $v$<sub>k</sub>]
+    - [v<sub>1</sub>, v<sub>2</sub>, ..., v<sub>k</sub>]
   - Mutations can increase or decrease a specific k value
   - No instructions required, since org is essentially a bit string
 - Problem:
-  - fitness(org, K, X) = |X - $v$<sub>$i$</sub>| + ... + |X - $v$<sub>k</sub>|
-    - $v$<sub>$i$</sub> is the internal value that minimizes |X - v|
+  - fitness(org, K, X) = |X - v<sub>i</sub>| + ... + |X - v<sub>k</sub>|
+    - v<sub>i</sub> is the internal value that minimizes |X - v|
   - We then sum all internal traits to the right
 - Analysis:
   - How much does a problem structure affect solutions attempting to reach objective.
