@@ -20,7 +20,8 @@
 
 ///< Custom naming
 using ids_t = emp::vector<size_t>;
-using fit_fun = std::function<double(DiaOrg &)>; 
+using fit_fun = std::function<double(DiaOrg &)>;
+using eva_fun = std::function<void(DiaOrg &)> ;
 using sel_fun = std::function<ids_t()>;
 using tar_t = emp::vector<double>;
 
@@ -28,8 +29,9 @@ class DiaWorld : public emp::World<DiaOrg> {
 
   private:
     DiaWorldConfig & config;      ///< Experiments configurations
-    fit_fun fitness;              ///< Experiemnt fitness function 
+    fit_fun fitness;              ///< Experiemnt fitness function
     sel_fun select;               ///< Experiment selection fucntion
+    eva_fun evaluate;             ///< Experiment evaluation function
     ids_t pop_ids;                ///< Population IDs for randomly picking from the world
     tar_t target;                 ///< Targets that organisms are trying to reach
     std::ofstream sol_cnt;        ///< Track data regarding solution count
@@ -37,7 +39,7 @@ class DiaWorld : public emp::World<DiaOrg> {
     std::ofstream min_err;        ///> Track the minimum error per internal val per update
 
   public:
-    DiaWorld(DiaWorldConfig & _config) : config(_config) {      ///< Constructor  
+    DiaWorld(DiaWorldConfig & _config) : config(_config) {      ///< Constructor
       // Set requested selection and fitness functions
       InitialSetup();
       // Populate the pop_ids
@@ -61,18 +63,26 @@ class DiaWorld : public emp::World<DiaOrg> {
     }
 
     /* Functions for initial experiment set up */
-    
-    void InitialSetup();            ///< Do all the initial set up    
-    void SetOnUpdate();             ///< Set up world configurations        
+
+    void InitialSetup();            ///< Do all the initial set up
+    void SetOnUpdate();             ///< Set up world configurations
     void SetMutations();            ///< Set up the mutations parameters
     void SetSelectionFun();         ///< Set up the selection function
     void SetOnOffspringReady();     ///< Set up the OnOffspringReady function
+    void SetEvaluationFun();        ///< Set up the Evaluation function
     void InitializeWorld();         ///< Set initial population of orgs
 
-    ///< Tournament Selection Set Up
-    void TournamentFitnessFun();        ///< Set fitness function for Tournament 
+    /* Functions for Tournament Selection set up */
+
+    void TournamentFitnessFun();        ///< Set fitness function for Tournament
     void TournamentSelection();         ///< Set Tournament Selection Algorithm
     void TournamentExploit();           ///< Set fitness function as Exploitation
+    void TournamentStructExploit();     ///< Set fitness function as Structured Exploitation
+
+    /* Functions for Evaluation set up */
+
+    void EvalExploit();               ///< Evaluate organisms with exploitation metric
+    void EvalStructExploit();         ///< Evalate organisms with structured exploitation metric
 
 
     /* Functions ran during experiment */
@@ -100,10 +110,11 @@ void DiaWorld::InitialSetup() {     ///< Do all the initial set up
   SetMutations();
   SetSelectionFun();
   SetOnOffspringReady();
+  SetEvaluationFun();
   InitializeWorld();
   SetOnUpdate();
   SetCSVHeaders();
-}  
+}
 
 void DiaWorld::SetOnUpdate() {      ///< Set up world configurations
   OnUpdate([this](size_t) {
@@ -117,12 +128,13 @@ void DiaWorld::SetOnUpdate() {      ///< Set up world configurations
     Births(parents);
   });
 }
-    
+
 void DiaWorld::SetMutations() {     ///< Set up the mutations parameters
   // Set up the worlds mutation function!
   SetMutFun([this](DiaOrg & org, emp::Random & random) {
     // Get org genome!
     auto & genome = org.GetGenome();
+    size_t cnt = 0;
     // Check that genome is correct length
     emp_assert(genome.size() == config.K_INTERNAL(), genome.size());
 
@@ -133,22 +145,44 @@ void DiaWorld::SetMutations() {     ///< Set up the mutations parameters
         // Apply mutation from normal distribution
         double evo = random_ptr->GetRandNormal(config.MEAN(), config.STD());
         genome[i] += evo;
+        cnt += 1;
       }
     }
 
-    return 1;
+    return cnt;
   });
 }
 
 void DiaWorld::SetSelectionFun() {  ///< Set up the selection function
   switch (config.SELECTION())
   {
-  case 0:  // Tournament 
+  case 0:  // Tournament
     std::cerr << "SELECTION: "; TournamentSelection();
     std::cerr << "DIAGNOSTIC: "; TournamentFitnessFun();
     break;
+
   default:
     std::cerr << "SELECTED INVALID SELECTION SCHEME" << std::endl;
+    exit(-1);
+    break;
+  }
+}
+
+void DiaWorld::SetEvaluationFun() {        ///< Set up the Evaluation function
+  // What function are using to evaluate?
+  std::cerr << "Evaluation Function: ";
+  switch (config.DIAGNOSTIC())
+  {
+  case 0: // Exploitation
+    EvalExploit();
+    break;
+
+  case 1: // Structured Exploitation
+    EvalStructExploit();
+    break;
+
+  default:
+    std::cerr << "NO EVALUATION MODE EXISTS" << std::endl;
     exit(-1);
     break;
   }
@@ -171,8 +205,10 @@ void DiaWorld::InitializeWorld() {  ///< Set initial population of orgs
   Inject(org.GetGenome(), config.POP_SIZE());
 }
 
-///< Tournament Selection Set Up
-void DiaWorld::TournamentFitnessFun() {    
+
+/* Functions for Tournament Selection set up */
+
+void DiaWorld::TournamentFitnessFun() {
   // Set up the cases to set the fitness fuction
   switch (config.DIAGNOSTIC()) {
     case 0:  // Exploitation
@@ -180,7 +216,7 @@ void DiaWorld::TournamentFitnessFun() {
       break;
 
     case 1:  // Structured Exploitation
-      /* code */
+      TournamentStructExploit();
       break;
 
     case 2:  // Ecology Diagnostic - Contradictory K Values
@@ -214,7 +250,7 @@ void DiaWorld::TournamentFitnessFun() {
     case 9:  // Exploration
       /* code */
       break;
-    
+
     default:  // Error if we reach here
       std::cerr << "TRYING TO SET A DIAGNOSTIC THAT DOESN'T EXIST" << std::endl;
       exit(-1);
@@ -224,18 +260,19 @@ void DiaWorld::TournamentFitnessFun() {
 
 void DiaWorld::TournamentSelection() {
   std::cerr << "Tournament Selection" << std::endl;
-  emp_assert(config.TOUR_SIZE() < config.POP_SIZE(), config.TOUR_SIZE());
+  emp_assert(config.TOUR_SIZE() <= config.POP_SIZE(), config.TOUR_SIZE());
   // Setting up tournament selection algorithm
   select = [this] () {
     // Holds all ids of parents selected for reproduction
     ids_t parents;
 
+    // Keep going till we have enough parents!
     while(parents.size() != config.POP_SIZE()) {
-      // Get ids for a tournament to begin 
+      // Get ids for a tournament to begin
       auto tour = emp::Choose(*random_ptr, config.POP_SIZE(), config.TOUR_SIZE());
       std::map<double, ids_t> scores;
 
-      // Get all the fitnesses 
+      // Get all the fitnesses
       for(auto i : tour) {
         // Get org fitness
         double score = fitness(GetOrg(i));
@@ -244,7 +281,7 @@ void DiaWorld::TournamentSelection() {
         auto it = scores.find(score);
         // Not found
         if(it == scores.end()) {
-          ids_t fresh; 
+          ids_t fresh;
           fresh.push_back(i);
           scores[score] = fresh;
         }
@@ -252,7 +289,7 @@ void DiaWorld::TournamentSelection() {
           scores[score].push_back(i);
         }
       }
-      // Select a parent and store for reproduction
+      // Randomly select a parent if there are ties, else get the only parent
       size_t winner = emp::Choose(*random_ptr, scores.begin()->second.size(), 1)[0];
       parents.push_back(scores.begin()->second[winner]);
     }
@@ -264,7 +301,15 @@ void DiaWorld::TournamentExploit(){
   std::cerr << "Standard Exploitation" << std::endl;
   fitness = [this] (DiaOrg & org) {
     // Return the sum of errors!
-    return org.GetTotal();
+    return org.GetTotalScore();
+  };
+}
+
+void DiaWorld::TournamentStructExploit() {    ///< Set fitness function as Structured Exploitation
+  std::cerr << "Structured Exploitation" << std::endl;
+  fitness = [this] (DiaOrg & org) {
+    // Return the sum of errors!
+    return org.GetTotalScore();
   };
 }
 
@@ -282,11 +327,9 @@ void DiaWorld::Evaluate() {          ///< Evaluate all orgs on individual test c
     auto & org = *pop[pos];
     org.Reset(config.K_INTERNAL());
 
-    // Loop through ground truth vector and score!
-    for(size_t i = 0; i < target.size(); i++) {
-      // Calculate individual values
-      org.CalculateScore(i, target[i]);
-    }
+    // Evaluate orgs!
+    evaluate(org);
+
     // Sum up all the error for the orgs
     org.TotalSumScores();
   }
@@ -304,6 +347,27 @@ void DiaWorld::Births(ids_t parents) {            ///< Call when its time to pro
 }
 
 
+/* Functions for Evaluation set up */
+
+void DiaWorld::EvalExploit() {      ///< Evaluate organisms with exploitation metrics
+  std::cerr << "Exploitation" << std::endl;
+  // Set the evaluation function
+  evaluate = [this] (DiaOrg & org) {
+    for(size_t i = 0; i < target.size(); i++) {
+      // Calculate individual values
+      org.ExploitError(i, target[i]);
+    }
+  };
+}
+
+void DiaWorld::EvalStructExploit() {         ///< Evalate organisms with structured exploitation metric
+  std::cerr << "Structured Exploitation" << std::endl;
+  // Set up structured exploitation function
+  evaluate = [this] (DiaOrg & org) {
+    org.StructExploitError(target);
+  };
+}
+
 /* Functions for gathering data */
 
 void DiaWorld::SetCSVHeaders() {                    ///< Set up all headers of csv files!
@@ -315,14 +379,14 @@ void DiaWorld::SetCSVHeaders() {                    ///< Set up all headers of c
   // Create header
   std::string head = "Update,";
   for(size_t i = 0; i < config.K_INTERNAL(); i++) {
-    std::string cur; 
+    std::string cur;
     if(i < config.K_INTERNAL()-1) {
       cur = "val-" + std::to_string(i) + ",";
       head += cur;
     }
     else {
       cur = "val-" + std::to_string(i) + "\n";
-      head += cur; 
+      head += cur;
     }
   }
 
@@ -338,7 +402,7 @@ void DiaWorld::GatherData(size_t up) {               ///< Will call all other fu
 }
 
 void DiaWorld::CountSolution(size_t up) {            ///< Given some threshold, how many solutions do we have?
-  // Hold solution counts 
+  // Hold solution counts
   emp::vector<size_t> record;
   record.resize(config.K_INTERNAL(), 0);
   // Iterate through the internal values
@@ -359,22 +423,22 @@ void DiaWorld::CountSolution(size_t up) {            ///< Given some threshold, 
   // Write the data to the csv file!
   std::string update = std::to_string(up) + ",";
   for(size_t i = 0; i < config.K_INTERNAL(); i++) {
-    std::string cur; 
+    std::string cur;
     if(i < config.K_INTERNAL()-1) {
       cur = std::to_string(record[i]) + ",";
       update += cur;
     }
     else {
       cur = std::to_string(record[i]) + "\n";
-      update += cur; 
+      update += cur;
     }
   }
 
-  sol_cnt << update; 
+  sol_cnt << update;
 }
 
 void DiaWorld::AverageError(size_t up) {             ///< Average error on a k-val, per population, per update
-  // Hold solution counts 
+  // Hold solution counts
   emp::vector<double> record;
   record.resize(config.K_INTERNAL(), 0.0);
   // Iterate through the internal values
@@ -395,22 +459,22 @@ void DiaWorld::AverageError(size_t up) {             ///< Average error on a k-v
   // Write all data to the csv
   std::string update = std::to_string(up) + ",";
   for(size_t i = 0; i < config.K_INTERNAL(); i++) {
-    std::string cur; 
+    std::string cur;
     if(i < config.K_INTERNAL()-1) {
       cur = std::to_string(record[i]) + ",";
       update += cur;
     }
     else {
       cur = std::to_string(record[i]) + "\n";
-      update += cur; 
+      update += cur;
     }
   }
 
-  avg_err << update; 
+  avg_err << update;
 }
 
 void DiaWorld::MinimumError(size_t up) {             ///< Get best error per k-val
-  // Hold solution counts 
+  // Hold solution counts
   emp::vector<double> record;
   record.resize(config.K_INTERNAL(), 100000.0);
   // Iterate through the internal values
@@ -430,17 +494,17 @@ void DiaWorld::MinimumError(size_t up) {             ///< Get best error per k-v
   // Write all data to the csv
   std::string update = std::to_string(up) + ",";
   for(size_t i = 0; i < config.K_INTERNAL(); i++) {
-    std::string cur; 
+    std::string cur;
     if(i < config.K_INTERNAL()-1) {
       cur = std::to_string(record[i]) + ",";
       update += cur;
     }
     else {
       cur = std::to_string(record[i]) + "\n";
-      update += cur; 
+      update += cur;
     }
   }
 
-  min_err << update; 
+  min_err << update;
 }
 #endif
