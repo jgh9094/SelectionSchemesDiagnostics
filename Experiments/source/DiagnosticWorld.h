@@ -72,12 +72,22 @@ class DiaWorld : public emp::World<DiaOrg> {
     void SetEvaluationFun();        ///< Set up the Evaluation function
     void InitializeWorld();         ///< Set initial population of orgs
 
+
     /* Functions for Tournament Selection set up */
 
     void TournamentFitnessFun();        ///< Set fitness function for Tournament
     void TournamentSelection();         ///< Set Tournament Selection Algorithm
     void TournamentExploit();           ///< Set fitness function as Exploitation
     void TournamentStructExploit();     ///< Set fitness function as Structured Exploitation
+
+
+    /* Functions for Lexicase Selection set up */
+
+    void LexicaseFitnessFun();        ///< Set fitness function for Lexicase
+    void LexicaseSelection();         ///< Set Lexicase Selection Algorithm
+    void LexicaseExploit();           ///< Set fitness function as Exploitation
+    void LexicaseStructExploit();     ///< Set fitness function as Structured Exploitation
+
 
     /* Functions for Evaluation set up */
 
@@ -311,6 +321,21 @@ void DiaWorld::TournamentStructExploit() {    ///< Set fitness function as Struc
     // Return the sum of errors!
     return org.GetTotalScore();
   };
+}
+
+
+/* Functions for Lexicase Selection set up */
+
+void DiaWorld::LexicaseFitnessFun() {        ///< Set fitness function for Lexicase
+}
+
+void DiaWorld::LexicaseSelection() {         ///< Set Lexicase Selection Algorithm
+}
+
+void DiaWorld::LexicaseExploit() {           ///< Set fitness function as Exploitation
+}
+
+void DiaWorld::LexicaseStructExploit() {     ///< Set fitness function as Structured Exploitation
 }
 
 
