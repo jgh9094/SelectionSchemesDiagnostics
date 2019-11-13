@@ -1,5 +1,38 @@
 /// This is the world for DiaOrgs
 
+
+/* TODO SECTION
+
+[X]: Finished coding >:D
+[P]: Process of coding >:|
+[?]: Need to figure out still :?
+[]: Nothing done yet :)
+
+SELECTIONS:
+[X]: Tournament
+[P]: Lexicase
+[]: Drift
+[]: Cohort Lexicase
+[]: Down Sampled Lexicase
+[]: EcoEA
+[]: Roulette
+
+DIAGNOSTICS:
+[X]: Exploitation
+[X]: Structured Exploitation
+[]: Contradictory K Traits Ecologoy
+[]: Weak Ecology
+[]: Specialist
+[]: Good & Bad Hints
+[]: Bias
+[]: Deceptive
+[]: Overfitting With Noise
+[?]: Overfitting With Smoothness
+[]: Exploitation
+
+DATA Analysis
+*/
+
 ///< Defnining name
 #ifndef DIA_WORLD_H
 #define DIA_WORLD_H
@@ -20,7 +53,8 @@
 
 ///< Custom naming
 using ids_t = emp::vector<size_t>;
-using fit_fun = std::function<double(DiaOrg &)>;
+using fit_agg_t = std::function<double(DiaOrg &)>;
+using fit_lex_t = std::function<double(DiaOrg &, size_t)>;
 using eva_fun = std::function<void(DiaOrg &)> ;
 using sel_fun = std::function<ids_t()>;
 using tar_t = emp::vector<double>;
@@ -29,10 +63,12 @@ class DiaWorld : public emp::World<DiaOrg> {
 
   private:
     DiaWorldConfig & config;      ///< Experiments configurations
-    fit_fun fitness;              ///< Experiemnt fitness function
+    fit_agg_t fitness_agg;        ///< Variable to return aggregate errors
+    fit_lex_t fitness_lex;        ///< Variable to fitness for a specific case
     sel_fun select;               ///< Experiment selection fucntion
     eva_fun evaluate;             ///< Experiment evaluation function
     ids_t pop_ids;                ///< Population IDs for randomly picking from the world
+    ids_t trait_ids;              ///< Vector holding ids for each trait we are evaluating
     tar_t target;                 ///< Targets that organisms are trying to reach
     std::ofstream sol_cnt;        ///< Track data regarding solution count
     std::ofstream avg_err;        ///< Track the average error per internal val per update
@@ -42,14 +78,17 @@ class DiaWorld : public emp::World<DiaOrg> {
     DiaWorld(DiaWorldConfig & _config) : config(_config) {      ///< Constructor
       // Set requested selection and fitness functions
       InitialSetup();
-      // Populate the pop_ids
-      for(size_t i = 0; i < config.POP_SIZE(); i++) { pop_ids.push_back(i); }
+      // Initialize the vector to poplulation pop_ids
+      for(size_t i = 0; i < config.POP_SIZE(); i++) {pop_ids.push_back(i);}
+      // Initialze the  vector t0 traits trait_ids
+      for(size_t i = 0; i < config.K_TRAITS(); i++) {trait_ids.push_back(i);}
+
       // Initialize pointer
       random_ptr = emp::NewPtr<emp::Random>(config.SEED());
 
       if(!config.MULTIOBJECTIVE()) {
         std::cerr << "MULTIOBJECTIVE: False" << std::endl;
-        target.resize(config.K_INTERNAL(), config.TARGET());
+        target.resize(config.K_TRAITS(), config.TARGET());
       }
       else {
 
@@ -146,7 +185,7 @@ void DiaWorld::SetMutations() {     ///< Set up the mutations parameters
     auto & genome = org.GetGenome();
     size_t cnt = 0;
     // Check that genome is correct length
-    emp_assert(genome.size() == config.K_INTERNAL(), genome.size());
+    emp_assert(genome.size() == config.K_TRAITS(), genome.size());
 
     // Loop through and apply mutations if applicable
     for(size_t i = 0; i < genome.size(); i++) {
@@ -170,6 +209,10 @@ void DiaWorld::SetSelectionFun() {  ///< Set up the selection function
     std::cerr << "SELECTION: "; TournamentSelection();
     std::cerr << "DIAGNOSTIC: "; TournamentFitnessFun();
     break;
+
+  case 1: // Lexicase
+    std::cerr << "SELECTION: "; LexicaseSelection();
+    std::cerr << "DIAGNOSTIC: "; LexicaseFitnessFun();
 
   default:
     std::cerr << "SELECTED INVALID SELECTION SCHEME" << std::endl;
@@ -204,14 +247,14 @@ void DiaWorld::SetOnOffspringReady() {  ///< Set up the OnOffspringReady functio
     // Mutate organism if possible
     if(config.MUTATE()) {
       DoMutationsOrg(org);
-      org.Reset(config.K_INTERNAL());
+      org.Reset(config.K_TRAITS());
     }
   });
 }
 
 void DiaWorld::InitializeWorld() {  ///< Set initial population of orgs
   // Fill the workd with requested population size!
-  DiaOrg org(config.K_INTERNAL());
+  DiaOrg org(config.K_TRAITS());
   Inject(org.GetGenome(), config.POP_SIZE());
 }
 
@@ -285,7 +328,7 @@ void DiaWorld::TournamentSelection() {
       // Get all the fitnesses
       for(auto i : tour) {
         // Get org fitness
-        double score = fitness(GetOrg(i));
+        double score = fitness_agg(GetOrg(i));
 
         // Check if we have seen this score
         auto it = scores.find(score);
@@ -309,7 +352,7 @@ void DiaWorld::TournamentSelection() {
 
 void DiaWorld::TournamentExploit(){
   std::cerr << "Standard Exploitation" << std::endl;
-  fitness = [this] (DiaOrg & org) {
+  fitness_agg = [this] (DiaOrg & org) {
     // Return the sum of errors!
     return org.GetTotalScore();
   };
@@ -317,7 +360,7 @@ void DiaWorld::TournamentExploit(){
 
 void DiaWorld::TournamentStructExploit() {    ///< Set fitness function as Structured Exploitation
   std::cerr << "Structured Exploitation" << std::endl;
-  fitness = [this] (DiaOrg & org) {
+  fitness_agg = [this] (DiaOrg & org) {
     // Return the sum of errors!
     return org.GetTotalScore();
   };
@@ -327,15 +370,102 @@ void DiaWorld::TournamentStructExploit() {    ///< Set fitness function as Struc
 /* Functions for Lexicase Selection set up */
 
 void DiaWorld::LexicaseFitnessFun() {        ///< Set fitness function for Lexicase
+  // Set up the cases to set the fitness fuction
+  switch (config.DIAGNOSTIC()) {
+    case 0:  // Exploitation
+      LexicaseExploit();
+      break;
+
+    case 1:  // Structured Exploitation
+      LexicaseStructExploit();
+      break;
+
+    case 2:  // Ecology Diagnostic - Contradictory K Values
+      /* code */
+      break;
+
+    case 3:  // Ecology Diagnostic
+      /* code */
+      break;
+
+    case 4:  // Specialist
+      /* code */
+      break;
+
+    case 5:  // Hints
+      /* code */
+      break;
+
+    case 6:  // Bias
+      /* code */
+      break;
+
+    case 7:  // Deceptive
+      /* code */
+      break;
+
+    case 8:  // Overfitting - Noise
+      /* code */
+      break;
+
+    case 9:  // Exploration
+      /* code */
+      break;
+
+    default:  // Error if we reach here
+      std::cerr << "TRYING TO SET A DIAGNOSTIC THAT DOESN'T EXIST" << std::endl;
+      exit(-1);
+      break;
+  }
 }
 
 void DiaWorld::LexicaseSelection() {         ///< Set Lexicase Selection Algorithm
+  // Check if we even have test cases lol
+  emp_assert(trait_ids.size() > 0, trait_ids.size());
+  emp_assert(pop_ids.size() == config.POP_SIZE(), pop_ids.size());
+  // Will hold all the parent ids for repreduction
+  ids_t parents;
+
+  // Keep looping through until we have enough parents
+  while(parents.size() != config.POP_SIZE()) {
+    // Shuffle test cases
+    emp::Shuffle(*random_ptr, trait_ids);
+    // Will hold all the scores with associated ids
+    std::map<double, ids_t> scores;
+    // Will hold ids of winners in a round of selection
+    // At the begining everyone is a "winner"
+    ids_t round_winners = pop_ids;
+    // Position trackers for test cases
+    size_t tc = 0;
+
+    // Check if rounds_winners is the correct size
+    emp_assert(round_winners.size() == config.POP_SIZE(), round_winners.size());
+
+    // Loop through all the test cases until we have a single winner or
+    // run out of test cases to use! Will randomly select winner if more than one
+    // at the end of the round.
+    while(tc != trait_id.size() || round_winners.size() == 1) {
+      for(size_t oid : round_winners) {
+
+      }
+    }
+  }
+
+
 }
 
 void DiaWorld::LexicaseExploit() {           ///< Set fitness function as Exploitation
+  std::cerr << "Exploitation" << std::endl;
+  fitness_lex = [this] (DiaOrg & org, size_t i) {
+    return org.GetScore(i);
+  }
 }
 
 void DiaWorld::LexicaseStructExploit() {     ///< Set fitness function as Structured Exploitation
+  std::cerr << "Exploitation" << std::endl;
+  fitness_lex = [this] (DiaOrg & org, size_t i) {
+    return org.GetScore(i);
+  }
 }
 
 
@@ -344,13 +474,13 @@ void DiaWorld::LexicaseStructExploit() {     ///< Set fitness function as Struct
 void DiaWorld::Evaluate() {          ///< Evaluate all orgs on individual test cases!
   //Make sure pop is the correct size
   emp_assert(pop.size() == config.POP_SIZE(), pop.size());
-  emp_assert(target.size() == config.K_INTERNAL(), target.size());
+  emp_assert(target.size() == config.K_TRAITS(), target.size());
 
   // Loop through world and score orgs
   for(size_t pos = 0; pos < pop.size(); pos++) {
     // Get org and calculate score
     auto & org = *pop[pos];
-    org.Reset(config.K_INTERNAL());
+    org.Reset(config.K_TRAITS());
 
     // Evaluate orgs!
     evaluate(org);
@@ -403,9 +533,9 @@ void DiaWorld::SetCSVHeaders() {                    ///< Set up all headers of c
 
   // Create header
   std::string head = "Update,";
-  for(size_t i = 0; i < config.K_INTERNAL(); i++) {
+  for(size_t i = 0; i < config.K_TRAITS(); i++) {
     std::string cur;
-    if(i < config.K_INTERNAL()-1) {
+    if(i < config.K_TRAITS()-1) {
       cur = "val-" + std::to_string(i) + ",";
       head += cur;
     }
@@ -429,9 +559,9 @@ void DiaWorld::GatherData(size_t up) {               ///< Will call all other fu
 void DiaWorld::CountSolution(size_t up) {            ///< Given some threshold, how many solutions do we have?
   // Hold solution counts
   emp::vector<size_t> record;
-  record.resize(config.K_INTERNAL(), 0);
+  record.resize(config.K_TRAITS(), 0);
   // Iterate through the internal values
-  for(size_t k = 0; k < config.K_INTERNAL(); k++) {
+  for(size_t k = 0; k < config.K_TRAITS(); k++) {
     // Iterate through the pop per internal val
     for(size_t i = 0; i < pop.size(); i++) {
       // Get org and its score on the ith internal k val
@@ -447,9 +577,9 @@ void DiaWorld::CountSolution(size_t up) {            ///< Given some threshold, 
 
   // Write the data to the csv file!
   std::string update = std::to_string(up) + ",";
-  for(size_t i = 0; i < config.K_INTERNAL(); i++) {
+  for(size_t i = 0; i < config.K_TRAITS(); i++) {
     std::string cur;
-    if(i < config.K_INTERNAL()-1) {
+    if(i < config.K_TRAITS()-1) {
       cur = std::to_string(record[i]) + ",";
       update += cur;
     }
@@ -465,9 +595,9 @@ void DiaWorld::CountSolution(size_t up) {            ///< Given some threshold, 
 void DiaWorld::AverageError(size_t up) {             ///< Average error on a k-val, per population, per update
   // Hold solution counts
   emp::vector<double> record;
-  record.resize(config.K_INTERNAL(), 0.0);
+  record.resize(config.K_TRAITS(), 0.0);
   // Iterate through the internal values
-  for(size_t k = 0; k < config.K_INTERNAL(); k++) {
+  for(size_t k = 0; k < config.K_TRAITS(); k++) {
     // Iterate through the pop per internal val
     for(size_t i = 0; i < pop.size(); i++) {
       // Get org and its score on the ith internal k val
@@ -479,13 +609,13 @@ void DiaWorld::AverageError(size_t up) {             ///< Average error on a k-v
   }
 
   // Divide all scores by the pop size!
-  for(size_t i = 0; i < config.K_INTERNAL(); i++) { record[i] /= (double) config.POP_SIZE();}
+  for(size_t i = 0; i < config.K_TRAITS(); i++) { record[i] /= (double) config.POP_SIZE();}
 
   // Write all data to the csv
   std::string update = std::to_string(up) + ",";
-  for(size_t i = 0; i < config.K_INTERNAL(); i++) {
+  for(size_t i = 0; i < config.K_TRAITS(); i++) {
     std::string cur;
-    if(i < config.K_INTERNAL()-1) {
+    if(i < config.K_TRAITS()-1) {
       cur = std::to_string(record[i]) + ",";
       update += cur;
     }
@@ -501,9 +631,9 @@ void DiaWorld::AverageError(size_t up) {             ///< Average error on a k-v
 void DiaWorld::MinimumError(size_t up) {             ///< Get best error per k-val
   // Hold solution counts
   emp::vector<double> record;
-  record.resize(config.K_INTERNAL(), 100000.0);
+  record.resize(config.K_TRAITS(), 100000.0);
   // Iterate through the internal values
-  for(size_t k = 0; k < config.K_INTERNAL(); k++) {
+  for(size_t k = 0; k < config.K_TRAITS(); k++) {
     // Iterate through the pop per internal val
     for(size_t i = 0; i < pop.size(); i++) {
       // Get org and its score on the ith internal k val
@@ -518,9 +648,9 @@ void DiaWorld::MinimumError(size_t up) {             ///< Get best error per k-v
 
   // Write all data to the csv
   std::string update = std::to_string(up) + ",";
-  for(size_t i = 0; i < config.K_INTERNAL(); i++) {
+  for(size_t i = 0; i < config.K_TRAITS(); i++) {
     std::string cur;
-    if(i < config.K_INTERNAL()-1) {
+    if(i < config.K_TRAITS()-1) {
       cur = std::to_string(record[i]) + ",";
       update += cur;
     }
@@ -532,4 +662,5 @@ void DiaWorld::MinimumError(size_t up) {             ///< Get best error per k-v
 
   min_err << update;
 }
+
 #endif
