@@ -420,6 +420,7 @@ void DiaWorld::LexicaseFitnessFun() {        ///< Set fitness function for Lexic
 }
 
 void DiaWorld::LexicaseSelection() {         ///< Set Lexicase Selection Algorithm
+  std::cerr << "Lexicase Selection" << std::endl;
   // Check if we even have test cases lol
   emp_assert(trait_ids.size() > 0, trait_ids.size());
   emp_assert(pop_ids.size() == config.POP_SIZE(), pop_ids.size());
