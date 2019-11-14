@@ -1,6 +1,5 @@
 /// This is the world for DiaOrgs
 
-
 /* TODO SECTION
 
 [X]: Finished coding >:D
@@ -122,10 +121,11 @@ class DiaWorld : public emp::World<DiaOrg> {
 
     /* Functions for Lexicase Selection set up */
 
-    void LexicaseFitnessFun();        ///< Set fitness function for Lexicase
-    void LexicaseSelection();         ///< Set Lexicase Selection Algorithm
-    void LexicaseExploit();           ///< Set fitness function as Exploitation
-    void LexicaseStructExploit();     ///< Set fitness function as Structured Exploitation
+    void LexicaseFitnessFun();                                          ///< Set fitness function for Lexicase
+    void LexicaseSelection();                                           ///< Set Lexicase Selection Algorithm
+    size_t LexicaseWinner(ids_t & round_pop, ids_t & test_cases);       ///< Will select a parent winner
+    void LexicaseExploit();                                             ///< Set fitness function as Exploitation
+    void LexicaseStructExploit();                                       ///< Set fitness function as Structured Exploitation
 
 
     /* Functions for Evaluation set up */
@@ -424,48 +424,83 @@ void DiaWorld::LexicaseSelection() {         ///< Set Lexicase Selection Algorit
   emp_assert(trait_ids.size() > 0, trait_ids.size());
   emp_assert(pop_ids.size() == config.POP_SIZE(), pop_ids.size());
   // Will hold all the parent ids for repreduction
-  ids_t parents;
+  select = [this] () {
+    ids_t parents;
 
-  // Keep looping through until we have enough parents
-  while(parents.size() != config.POP_SIZE()) {
-    // Shuffle test cases
-    emp::Shuffle(*random_ptr, trait_ids);
-    // Will hold all the scores with associated ids
-    std::map<double, ids_t> scores;
-    // Will hold ids of winners in a round of selection
-    // At the begining everyone is a "winner"
-    ids_t round_winners = pop_ids;
-    // Position trackers for test cases
-    size_t tc = 0;
+    // Keep looping through until we have enough parents
+    while(parents.size() != config.POP_SIZE()) {
+      // Shuffle test cases
+      emp::Shuffle(*random_ptr, trait_ids);
+      // this list of parents will be used by lexicase to single out a parent
+      ids_t round_winners = pop_ids;
+      // Get the winning parent
+      size_t winner = LexicaseWinner(round_winners, trait_ids);
+      // Add parent to the next gen
+      parents.push_back(winner);
+    }
 
-    // Check if rounds_winners is the correct size
-    emp_assert(round_winners.size() == config.POP_SIZE(), round_winners.size());
+    return parents;
+  };
+}
 
-    // Loop through all the test cases until we have a single winner or
-    // run out of test cases to use! Will randomly select winner if more than one
-    // at the end of the round.
-    while(tc != trait_id.size() || round_winners.size() == 1) {
-      for(size_t oid : round_winners) {
+///< This function will take in an initial population and trim it down
+size_t DiaWorld::LexicaseWinner(ids_t & round_pop, ids_t & test_cases) {
+  // Will hold all the scores with associated ids
+  std::map<double, ids_t> scores;
+  // Position trackers for test cases
+  size_t tc = 0;
 
+  // Check if rounds_winners is the correct size at the beggining!
+  emp_assert(round_pop.size() == config.POP_SIZE(), round_pop.size());
+
+  // Loop through all the test cases until we have a single winner or
+  // run out of test cases to use! Will randomly select winner if more than one
+  // at the end of the round.
+  while(tc != test_cases.size() || round_pop.size() == 1) {
+    // Clear scores for this round!
+    scores.clear();
+
+    // Loop through all the winners per round
+    for(size_t oid : round_pop) {
+      //Get trait we are looking at and org score on trait
+      size_t trait = test_cases[tc];
+      double score = fitness_lex(GetOrg(oid), trait);
+
+      // Have we seen this score before?
+      auto it = scores.find(score);
+      // Not seen before
+      if(it == scores.end()) {
+        ids_t fresh = {oid};
+        scores[score] = fresh;
+      }
+      else {
+        scores[score].push_back(oid);
       }
     }
+
+    // Set the next round winners and update all vars
+    round_pop = scores.begin()->second;
+    tc++;
   }
 
-
+  // At this point we should have our finalists
+  // We will return one winner no matter the size of the vector of ids!
+  size_t winner = emp::Choose(*random_ptr, scores.begin()->second.size(), 1)[0];
+  return scores.begin()->second[winner];
 }
 
 void DiaWorld::LexicaseExploit() {           ///< Set fitness function as Exploitation
   std::cerr << "Exploitation" << std::endl;
   fitness_lex = [this] (DiaOrg & org, size_t i) {
     return org.GetScore(i);
-  }
+  };
 }
 
 void DiaWorld::LexicaseStructExploit() {     ///< Set fitness function as Structured Exploitation
   std::cerr << "Exploitation" << std::endl;
   fitness_lex = [this] (DiaOrg & org, size_t i) {
     return org.GetScore(i);
-  }
+  };
 }
 
 
