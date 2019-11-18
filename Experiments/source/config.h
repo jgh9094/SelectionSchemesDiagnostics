@@ -5,8 +5,8 @@
 
 EMP_BUILD_CONFIG( DiaWorldConfig,
   GROUP(WORLD, "How should the world be set up?"),
-  VALUE(POP_SIZE,         size_t,       1000,         "How many organisms should we start with?"),
-  VALUE(MAX_GENS,         size_t,       5000,          "How many generations should the runs go for?"),
+  VALUE(POP_SIZE,         size_t,       100,         "How many organisms should we start with?"),
+  VALUE(MAX_GENS,         size_t,       100,          "How many generations should the runs go for?"),
   VALUE(SEED,             int,          0,          "Random number seed (0 for based on time)"),
 
   GROUP(ENVIRONMENT, "How should the enviorment be set up?"),
