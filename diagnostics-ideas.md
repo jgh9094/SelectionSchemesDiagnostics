@@ -78,7 +78,7 @@
   - Evolution should optimize the first value, then the second, then third,
     _etc._
   - fitness(org) = [f<sub>1</sub>, f<sub>2</sub>, f<sub>3</sub>, ..., f<sub>K</sub>]
-    - for all f<sub>i</sub> in fitness(org): 
+    - for all f<sub>i</sub> in fitness(org):
       - f<sub>1</sub> = |X - v<sub>1</sub>|
       - f<sub>j</sub> (for all j in [2,K]):
         - if f<sub>j-1</sub> <= |X - v<sub>j</sub>|, -> f<sub>j</sub> = |X - v<sub>j</sub>|
@@ -102,8 +102,12 @@
     - [v<sub>1</sub>, v<sub>2</sub>, ..., v<sub>k</sub>]
   - Mutations can increase or decrease a specific k value
 - Problem:
-  - Fitness contribution for each trait: fitness(org, K) = v<sub>k</sub>- max(v<sub>i</sub>)
-    - where v<sub>i</sub> is all other traits and i != k
+  - t* = min(|t-T|), trait that gives us the minimum error
+  - Fitness contribution for each trait:
+    - for i in [1,K]:
+      - fitness[i] = |(t*-t<sub>i</sub>) - T|
+      - if t* = t<sub>i</sub>:
+        - fitness[i] = |t* - T|
 - Analysis:
   - Solution count
   - Phenotypic diversity
