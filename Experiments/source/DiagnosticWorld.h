@@ -30,6 +30,10 @@ DIAGNOSTICS:
 []: Exploitation
 
 DATA Analysis
+[X]: Triat Average Error
+[X]: Trait Min Error
+[X]: Trait Solution Count
+[X]: Population Average Error
 */
 
 ///< Defnining name
@@ -62,17 +66,18 @@ using tar_t = emp::vector<double>;
 class DiaWorld : public emp::World<DiaOrg> {
 
   private:
-    DiaWorldConfig & config;      ///< Experiments configurations
-    fit_agg_t fitness_agg;        ///< Variable to return aggregate errors
-    fit_lex_t fitness_lex;        ///< Variable to fitness for a specific case
-    sel_fun select;               ///< Experiment selection fucntion
-    eva_fun evaluate;             ///< Experiment evaluation function
-    ids_t pop_ids;                ///< Population IDs for randomly picking from the world
-    ids_t trait_ids;              ///< Vector holding ids for each trait we are evaluating
-    tar_t target;                 ///< Targets that organisms are trying to reach
-    std::ofstream sol_cnt;        ///< Track data regarding solution count
-    std::ofstream avg_err;        ///< Track the average error per internal val per update
-    std::ofstream min_err;        ///> Track the minimum error per internal val per update
+    DiaWorldConfig & config;          ///< Experiments configurations
+    fit_agg_t fitness_agg;            ///< Variable to return aggregate errors
+    fit_lex_t fitness_lex;            ///< Variable to fitness for a specific case
+    sel_fun select;                   ///< Experiment selection fucntion
+    eva_fun evaluate;                 ///< Experiment evaluation function
+    ids_t pop_ids;                    ///< Population IDs for randomly picking from the world
+    ids_t trait_ids;                  ///< Vector holding ids for each trait we are evaluating
+    tar_t target;                     ///< Targets that organisms are trying to reach
+    std::fstream trt_sol_cnt;         ///< Track number of solutions for a trait per update
+    std::fstream trt_avg_err;         ///< Track the average error for a trait per update
+    std::fstream trt_min_err;         ///< Track the minimum error for a trait  per update
+    std::fstream pop_avg_err;         ///< Track the average error for the population each generation
 
   public:
     DiaWorld(DiaWorldConfig & _config) : config(_config) {      ///< Constructor
@@ -85,6 +90,7 @@ class DiaWorld : public emp::World<DiaOrg> {
       // Initialize pointer
       random_ptr = emp::NewPtr<emp::Random>(config.SEED());
 
+      // If not multiobjective, then we can set all traits to the same value
       if(!config.MULTIOBJECTIVE()) {
         std::cerr << "MULTIOBJECTIVE: False" << std::endl;
         target.resize(config.K_TRAITS(), config.TARGET());
@@ -95,9 +101,9 @@ class DiaWorld : public emp::World<DiaOrg> {
     }
 
     ~DiaWorld() {
-      sol_cnt.close();
-      avg_err.close();
-      min_err.close();
+      trt_sol_cnt.close();
+      trt_avg_err.close();
+      trt_min_err.close();
     }
 
     /* Functions for initial experiment set up */
@@ -144,11 +150,12 @@ class DiaWorld : public emp::World<DiaOrg> {
 
     /* Functions for gathering data */
 
-    void SetCSVHeaders();                   ///< Set up all headers of csv files!
-    void GatherData(size_t up);             ///< Will call all other functions to gather data
-    void CountSolution(size_t up);          ///< Given some threshold, how many solutions do we have?
-    void AverageError(size_t up);           ///< Average error on a k-val, per population, per update
-    void MinimumError(size_t up);           ///< Get best error per k-val
+    void SetCSVHeaders();                        ///< Set up all headers of csv files!
+    void GatherData(size_t up);                  ///< Will call all other functions to gather data
+    void CountTraitSolution(size_t up);          ///< Given some threshold, how many solutions do we have?
+    void AverageTraitError(size_t up);           ///< Average error on a trait, per population, per update
+    void MinimumTraitError(size_t up);           ///< Get best error per trait
+    void AveragePopError(size_t up);             ///< Average error for a population per update
 };
 
 /* Functions for initial experiment set up */
@@ -565,40 +572,35 @@ void DiaWorld::EvalStructExploit() {         ///< Evalate organisms with structu
 /* Functions for gathering data */
 
 void DiaWorld::SetCSVHeaders() {                    ///< Set up all headers of csv files!
-
   std::cerr << "SETTING CSV HEADER" << std::endl;
+
   // Initialize data trackers
-  sol_cnt.open("sol_cnt.csv");
-  avg_err.open("avg_err.csv");
-  min_err.open("min_err.csv");
+  trt_avg_err.open(config.OUTPUT_DIR() + "trt_avg_err.csv", std::ios::out | std::ios::app);
+  trt_min_err.open(config.OUTPUT_DIR() + "trt_min_err.csv", std::ios::out | std::ios::app);
+  trt_sol_cnt.open(config.OUTPUT_DIR() + "trt_sol_cnt.csv", std::ios::out | std::ios::app);
+  pop_avg_err.open(config.OUTPUT_DIR() + "pop_avg_err.csv", std::ios::out | std::ios::app);
 
   // Create header
   std::string head = "Update,";
   for(size_t i = 0; i < config.K_TRAITS(); i++) {
-    std::string cur;
-    if(i < config.K_TRAITS()-1) {
-      cur = "val-" + std::to_string(i) + ",";
-      head += cur;
-    }
-    else {
-      cur = "val-" + std::to_string(i) + "\n";
-      head += cur;
-    }
+    std::string cur = (i < config.K_TRAITS()-1) ? "val-" + std::to_string(i) + "," : "val-" + std::to_string(i);
+    head += cur;
   }
 
-  sol_cnt << head;
-  avg_err << head;
-  min_err << head;
+  trt_avg_err << head << std::endl;
+  trt_min_err << head << std::endl;
+  trt_sol_cnt << head << std::endl;
+  pop_avg_err << "Gen,Error" << std::endl;
 }
 
 void DiaWorld::GatherData(size_t up) {               ///< Will call all other functions to gather data
-  CountSolution(up);
-  AverageError(up);
-  MinimumError(up);
+  AverageTraitError(up);
+  MinimumTraitError(up);
+  CountTraitSolution(up);
+  AveragePopError(up);
 }
 
-void DiaWorld::CountSolution(size_t up) {            ///< Given some threshold, how many solutions do we have?
-  std::cout << "CALCULATING SOLUTION COUNT" << std::endl;
+void DiaWorld::CountTraitSolution(size_t up) {            ///< Given some threshold, how many solutions do we have?
   // Hold solution counts
   emp::vector<size_t> record;
   record.resize(config.K_TRAITS(), 0);
@@ -617,24 +619,16 @@ void DiaWorld::CountSolution(size_t up) {            ///< Given some threshold, 
     }
   }
 
-  // Write the data to the csv file!
+  // Write all data to the csv
   std::string update = std::to_string(up) + ",";
   for(size_t i = 0; i < config.K_TRAITS(); i++) {
-    std::string cur;
-    if(i < config.K_TRAITS()-1) {
-      cur = std::to_string(record[i]) + ",";
-      update += cur;
-    }
-    else {
-      cur = std::to_string(record[i]) + "\n";
-      update += cur;
-    }
+    std::string cur = (i < config.K_TRAITS()-1) ? std::to_string(record[i]) + "," : std::to_string(record[i]);
+    update += cur;
   }
-  std::cout << update << std::endl;
-  sol_cnt << update;
+  trt_sol_cnt << update << std::endl;
 }
 
-void DiaWorld::AverageError(size_t up) {             ///< Average error on a k-val, per population, per update
+void DiaWorld::AverageTraitError(size_t up) {             ///< Average error on a trait, per population, per update
   // Hold solution counts
   emp::vector<double> record;
   record.resize(config.K_TRAITS(), 0.0);
@@ -656,21 +650,14 @@ void DiaWorld::AverageError(size_t up) {             ///< Average error on a k-v
   // Write all data to the csv
   std::string update = std::to_string(up) + ",";
   for(size_t i = 0; i < config.K_TRAITS(); i++) {
-    std::string cur;
-    if(i < config.K_TRAITS()-1) {
-      cur = std::to_string(record[i]) + ",";
-      update += cur;
-    }
-    else {
-      cur = std::to_string(record[i]) + "\n";
-      update += cur;
-    }
+    std::string cur = (i < config.K_TRAITS()-1) ? std::to_string(record[i]) + "," : std::to_string(record[i]);
+    update += cur;
   }
 
-  avg_err << update;
+  trt_avg_err << update << std::endl;
 }
 
-void DiaWorld::MinimumError(size_t up) {             ///< Get best error per k-val
+void DiaWorld::MinimumTraitError(size_t up) {             ///< Get best error per trait
   // Hold solution counts
   emp::vector<double> record;
   record.resize(config.K_TRAITS(), 100000.0);
@@ -691,18 +678,25 @@ void DiaWorld::MinimumError(size_t up) {             ///< Get best error per k-v
   // Write all data to the csv
   std::string update = std::to_string(up) + ",";
   for(size_t i = 0; i < config.K_TRAITS(); i++) {
-    std::string cur;
-    if(i < config.K_TRAITS()-1) {
-      cur = std::to_string(record[i]) + ",";
-      update += cur;
-    }
-    else {
-      cur = std::to_string(record[i]) + "\n";
-      update += cur;
-    }
+    std::string cur = (i < config.K_TRAITS()-1) ? std::to_string(record[i]) + "," : std::to_string(record[i]);
+    update += cur;
   }
 
-  min_err << update;
+  trt_min_err << update << std::endl;
 }
 
+void DiaWorld::AveragePopError(size_t up) {             ///< Average error for a population per update
+  // Hold population error
+  double error = 0.0;
+
+  // Iterate through the pop
+  for(size_t i = 0; i < pop.size(); i++) {
+    DiaOrg & org = *pop[i];
+    error += org.GetTotalScore();
+  }
+
+  error /= (double) pop.size();
+
+  pop_avg_err << std::to_string(up) + "," + std::to_string(error) << std::endl;
+}
 #endif
