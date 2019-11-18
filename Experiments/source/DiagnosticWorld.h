@@ -41,6 +41,7 @@ DATA Analysis
 #include <utility>
 #include <cmath>
 #include <fstream>
+#include <string>
 
 ///< Empirical headers
 #include "Evolve/World.h"
@@ -75,13 +76,12 @@ class DiaWorld : public emp::World<DiaOrg> {
 
   public:
     DiaWorld(DiaWorldConfig & _config) : config(_config) {      ///< Constructor
-      // Set requested selection and fitness functions
-      InitialSetup();
       // Initialize the vector to poplulation pop_ids
       for(size_t i = 0; i < config.POP_SIZE(); i++) {pop_ids.push_back(i);}
       // Initialze the  vector t0 traits trait_ids
       for(size_t i = 0; i < config.K_TRAITS(); i++) {trait_ids.push_back(i);}
-
+      // Set requested selection and fitness functions
+      InitialSetup();
       // Initialize pointer
       random_ptr = emp::NewPtr<emp::Random>(config.SEED());
 
@@ -123,7 +123,7 @@ class DiaWorld : public emp::World<DiaOrg> {
 
     void LexicaseFitnessFun();                                          ///< Set fitness function for Lexicase
     void LexicaseSelection();                                           ///< Set Lexicase Selection Algorithm
-    size_t LexicaseWinner(ids_t & round_pop, ids_t & test_cases);       ///< Will select a parent winner
+    size_t LexicaseWinner(ids_t & round_pop, ids_t const & test_cases);       ///< Will select a parent winner
     void LexicaseExploit();                                             ///< Set fitness function as Exploitation
     void LexicaseStructExploit();                                       ///< Set fitness function as Structured Exploitation
 
@@ -213,6 +213,7 @@ void DiaWorld::SetSelectionFun() {  ///< Set up the selection function
   case 1: // Lexicase
     std::cerr << "SELECTION: "; LexicaseSelection();
     std::cerr << "DIAGNOSTIC: "; LexicaseFitnessFun();
+    break;
 
   default:
     std::cerr << "SELECTED INVALID SELECTION SCHEME" << std::endl;
@@ -445,7 +446,7 @@ void DiaWorld::LexicaseSelection() {         ///< Set Lexicase Selection Algorit
 }
 
 ///< This function will take in an initial population and trim it down
-size_t DiaWorld::LexicaseWinner(ids_t & round_pop, ids_t & test_cases) {
+size_t DiaWorld::LexicaseWinner(ids_t & round_pop, ids_t const & test_cases) {
   // Will hold all the scores with associated ids
   std::map<double, ids_t> scores;
   // Position trackers for test cases
@@ -457,9 +458,11 @@ size_t DiaWorld::LexicaseWinner(ids_t & round_pop, ids_t & test_cases) {
   // Loop through all the test cases until we have a single winner or
   // run out of test cases to use! Will randomly select winner if more than one
   // at the end of the round.
-  while(tc != test_cases.size() || round_pop.size() == 1) {
+  while(tc < test_cases.size() && round_pop.size() != 1) {
     // Clear scores for this round!
     scores.clear();
+
+    // std::cerr << tc << std::endl;
 
     // Loop through all the winners per round
     for(size_t oid : round_pop) {
@@ -562,6 +565,8 @@ void DiaWorld::EvalStructExploit() {         ///< Evalate organisms with structu
 /* Functions for gathering data */
 
 void DiaWorld::SetCSVHeaders() {                    ///< Set up all headers of csv files!
+
+  std::cerr << "SETTING CSV HEADER" << std::endl;
   // Initialize data trackers
   sol_cnt.open("sol_cnt.csv");
   avg_err.open("avg_err.csv");
@@ -593,6 +598,7 @@ void DiaWorld::GatherData(size_t up) {               ///< Will call all other fu
 }
 
 void DiaWorld::CountSolution(size_t up) {            ///< Given some threshold, how many solutions do we have?
+  std::cout << "CALCULATING SOLUTION COUNT" << std::endl;
   // Hold solution counts
   emp::vector<size_t> record;
   record.resize(config.K_TRAITS(), 0);
@@ -624,7 +630,7 @@ void DiaWorld::CountSolution(size_t up) {            ///< Given some threshold, 
       update += cur;
     }
   }
-
+  std::cout << update << std::endl;
   sol_cnt << update;
 }
 
