@@ -9,9 +9,9 @@
 
 SELECTIONS:
 [X]: Tournament
-[P]: Lexicase
-[]: Drift
-[]: Cohort Lexicase
+[X]: Lexicase
+[X]: Drift
+[P]: Cohort Lexicase
 []: Down Sampled Lexicase
 []: EcoEA
 []: Roulette
@@ -62,18 +62,27 @@ using fit_lex_t = std::function<double(DiaOrg &, size_t)>;
 using eva_fun = std::function<void(DiaOrg &)> ;
 using sel_fun = std::function<ids_t()>;
 using tar_t = emp::vector<double>;
+using cls_t = emp::vector<emp::vector<size_t>>;
 
 class DiaWorld : public emp::World<DiaOrg> {
 
   private:
+
+    /* Experiment Set Up */
     DiaWorldConfig & config;          ///< Experiments configurations
     fit_agg_t fitness_agg;            ///< Variable to return aggregate errors
     fit_lex_t fitness_lex;            ///< Variable to fitness for a specific case
     sel_fun select;                   ///< Experiment selection fucntion
     eva_fun evaluate;                 ///< Experiment evaluation function
+
+    /* Population, Org, and Traits */
     ids_t pop_ids;                    ///< Population IDs for randomly picking from the world
     ids_t trait_ids;                  ///< Vector holding ids for each trait we are evaluating
     tar_t target;                     ///< Targets that organisms are trying to reach
+    cls_t pop_coh;                    ///< Hold the organism cohorts
+    cls_t trt_coh;                    ///< Hold the trait cohorts
+
+    /* Data Tracking */
     std::fstream trt_sol_cnt;         ///< Track number of solutions for a trait per update
     std::fstream trt_avg_err;         ///< Track the average error for a trait per update
     std::fstream trt_min_err;         ///< Track the minimum error for a trait  per update
@@ -127,11 +136,24 @@ class DiaWorld : public emp::World<DiaOrg> {
 
     /* Functions for Lexicase Selection set up */
 
-    void LexicaseFitnessFun();                                          ///< Set fitness function for Lexicase
-    void LexicaseSelection();                                           ///< Set Lexicase Selection Algorithm
+    void LexicaseFitnessFun();                                                ///< Set fitness function for Lexicase
+    void LexicaseSelection();                                                 ///< Set Lexicase Selection Algorithm
     size_t LexicaseWinner(ids_t & round_pop, ids_t const & test_cases);       ///< Will select a parent winner
-    void LexicaseExploit();                                             ///< Set fitness function as Exploitation
-    void LexicaseStructExploit();                                       ///< Set fitness function as Structured Exploitation
+    void LexicaseExploit();                                                   ///< Set fitness function as Exploitation
+    void LexicaseStructExploit();                                             ///< Set fitness function as Structured Exploitation
+
+
+    /* Function for Drift Selction set up */
+
+    void DriftFitnessFun();
+    void DriftSelection();
+
+
+    /* Function for Drift Selction set up */
+
+    void CohortLexicaseFitnessFun();          ///< Set fitness function for Lexicase
+    void CohortLexicaseSelection();           ///< Set Lexicase Selection Algorithm
+    void CohortLexicaseInitialize();          ///< Create the cohorts for both population and traits
 
 
     /* Functions for Evaluation set up */
@@ -220,6 +242,11 @@ void DiaWorld::SetSelectionFun() {  ///< Set up the selection function
   case 1: // Lexicase
     std::cerr << "SELECTION: "; LexicaseSelection();
     std::cerr << "DIAGNOSTIC: "; LexicaseFitnessFun();
+    break;
+
+  case 2: // Drift
+    std::cerr << "SELECTION: "; DriftFitnessFun();
+    std::cerr << "DIAGNOSTIC: "; DriftSelection();
     break;
 
   default:
@@ -428,12 +455,16 @@ void DiaWorld::LexicaseFitnessFun() {        ///< Set fitness function for Lexic
 }
 
 void DiaWorld::LexicaseSelection() {         ///< Set Lexicase Selection Algorithm
+  // What are we doing?
   std::cerr << "Lexicase Selection" << std::endl;
+
   // Check if we even have test cases lol
   emp_assert(trait_ids.size() > 0, trait_ids.size());
   emp_assert(pop_ids.size() == config.POP_SIZE(), pop_ids.size());
-  // Will hold all the parent ids for repreduction
+
+  // Set the selction lambda
   select = [this] () {
+    // Will hold all the parent ids for repreduction
     ids_t parents;
 
     // Keep looping through until we have enough parents
@@ -515,6 +546,39 @@ void DiaWorld::LexicaseStructExploit() {     ///< Set fitness function as Struct
 }
 
 
+/* Function for Drift Selction set up */
+
+void DiaWorld::DriftFitnessFun() {
+  /* Fitness does not matter for this case
+     but function if user would like the user
+     would like to track additional things! */
+
+     std::cerr << "Drift Requires No Fitness!" << std::endl;
+}
+
+void DiaWorld::DriftSelection() {
+  // What are we doing?
+  std::cerr << "Drift Selection" << std::endl;
+
+  // Check some stuff before hand
+  emp_assert(pop_ids.size() == config.POP_SIZE(), pop_ids.size());
+
+  select = [this] () {
+    // Will hold all the parent ids for repreduction
+    ids_t parents;
+
+    // Keep looping through until we have enough parents
+    while(parents.size() != config.POP_SIZE()) {
+      size_t pick = emp::Choose(*random_ptr, config.POP_SIZE(), 1)[0];
+      parents.push_back(pop_ids[pick]);
+    }
+
+    return parents;
+  };
+
+}
+
+
 /* Functions ran during experiment */
 
 void DiaWorld::Evaluate() {          ///< Evaluate all orgs on individual test cases!
@@ -568,6 +632,7 @@ void DiaWorld::EvalStructExploit() {         ///< Evalate organisms with structu
     org.StructExploitError(target);
   };
 }
+
 
 /* Functions for gathering data */
 
@@ -699,4 +764,6 @@ void DiaWorld::AveragePopError(size_t up) {             ///< Average error for a
 
   pop_avg_err << std::to_string(up) + "," + std::to_string(error) << std::endl;
 }
+
+
 #endif
