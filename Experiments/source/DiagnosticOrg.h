@@ -137,11 +137,11 @@ void DiaOrg::StructExploitError(const genome_t & target) { ///< Will calculate t
   for(i; i < target.size(); i++) {
     // If we have a better previous score, our condition is broken
     if(GetScore(i-1) <= std::abs(GetTrait(i) - target[i])){
-      SetScore(i, std::abs(GetTrait(i) - target[i]));
+      DistanceError(i, target[i]);
     }
     else {
       fail = true;
-      SetScore(i, std::abs(target[i]));
+      DistanceError(i, target[i]);
       break;
     }
   }
@@ -150,7 +150,7 @@ void DiaOrg::StructExploitError(const genome_t & target) { ///< Will calculate t
   // For the i value we broke out of the for loop at
   if(fail){
     for(i; i < target.size(); i++){
-      SetScore(i, std::abs(target[i]));
+      DistanceError(i, 0.0);
     }
   }
 
