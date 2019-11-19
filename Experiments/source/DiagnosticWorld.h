@@ -34,6 +34,8 @@ DATA Analysis
 [X]: Trait Min Error
 [X]: Trait Solution Count
 [X]: Population Average Error
+[]: Unique Genotypes
+[]: Unique Phenotypes
 */
 
 ///< Defnining name
@@ -76,11 +78,15 @@ class DiaWorld : public emp::World<DiaOrg> {
     eva_fun evaluate;                 ///< Experiment evaluation function
 
     /* Population, Org, and Traits */
-    ids_t pop_ids;                    ///< Population IDs for randomly picking from the world
-    ids_t trait_ids;                  ///< Vector holding ids for each trait we are evaluating
-    tar_t target;                     ///< Targets that organisms are trying to reach
-    cls_t pop_coh;                    ///< Hold the organism cohorts
-    cls_t trt_coh;                    ///< Hold the trait cohorts
+    ids_t pop_ids;                      ///< Population IDs for randomly picking from the world
+    ids_t trait_ids;                    ///< Vector holding ids for each trait we are evaluating
+    tar_t target;                       ///< Targets that organisms are trying to reach
+    cls_t pop_coh;                      ///< Hold the organism cohorts
+    cls_t trt_coh;                      ///< Hold the trait cohorts
+    int coh_pop_num = -1;               ///< Number of popluation cohorts
+    int coh_pop_sze = -1;               ///< Size of each population cohort
+    int coh_trt_num = -1;               ///< Number of trait cohorts
+    int coh_trt_sze = -1;               ///< Size of each trait cohort
 
     /* Data Tracking */
     std::fstream trt_sol_cnt;         ///< Track number of solutions for a trait per update
@@ -90,6 +96,7 @@ class DiaWorld : public emp::World<DiaOrg> {
 
   public:
     DiaWorld(DiaWorldConfig & _config) : config(_config) {      ///< Constructor
+      CohortLexicaseSymmetry();
       // Initialize the vector to poplulation pop_ids
       for(size_t i = 0; i < config.POP_SIZE(); i++) {pop_ids.push_back(i);}
       // Initialze the  vector t0 traits trait_ids
@@ -153,7 +160,8 @@ class DiaWorld : public emp::World<DiaOrg> {
 
     void CohortLexicaseFitnessFun();          ///< Set fitness function for Lexicase
     void CohortLexicaseSelection();           ///< Set Lexicase Selection Algorithm
-    void CohortLexicaseInitialize();          ///< Create the cohorts for both population and traits
+    void CreateCohortsCLS();                  ///< Create the cohorts for both population and traits
+    void CohortLexicaseSymmetry();            ///< Checks if the cohort proportions work out
 
 
     /* Functions for Evaluation set up */
@@ -576,6 +584,61 @@ void DiaWorld::DriftSelection() {
     return parents;
   };
 
+}
+
+
+/* Function for Drift Selction set up */
+
+void DiaWorld::CohortLexicaseFitnessFun() {          ///< Set fitness function for Lexicase
+
+}
+
+void DiaWorld::CohortLexicaseSelection() {           ///< Set Lexicase Selection Algorithm
+
+}
+
+void DiaWorld::CreateCohortsCLS() {           ///< Set Lexicase Selection Algorithm
+
+}
+
+///< Checks if the cohort proportions work out
+void DiaWorld::CohortLexicaseSymmetry() {
+  // Check some math real quick for the population
+  int coh_size = config.POP_SIZE() * config.CLS_PROP();
+  int coh_numb = config.POP_SIZE() / coh_size;
+  size_t total = coh_size * coh_numb;
+  if(total != config.POP_SIZE()) {
+    std::cerr << "coh_size=" << coh_size << std::endl;
+    std::cerr << "coh_numb=" << coh_numb << std::endl;
+    std::cerr << "total=" << total << std::endl;
+    std::cerr << "COHORT LEXICASE PROPORTION MUST ALLOW FOR SYMMETRY BETWEEN POPULATION COHORTS" << std::endl;
+    exit(-1);
+  }
+
+  // Check some math real quick for the traits
+  int trt_size = config.K_TRAITS() * config.CLS_PROP();
+  int trt_numb = config.K_TRAITS() / trt_size;
+  size_t totall = trt_size * trt_numb;
+  if(totall != config.POP_SIZE()) {
+    std::cerr << "COHORT LEXICASE PROPORTION MUST ALLOW FOR SYMMETRY BETWEEN TRAIT COHORTS" << std::endl;
+    exit(-1);
+  }
+
+  // Make sure there an equal number of cohorts between traits and population
+  if(coh_numb != trt_numb) {
+    std::cerr << "trt_numb=" << trt_numb << std::endl;
+    std::cerr << "trt_size=" << trt_size << std::endl;
+    std::cerr << "COHORT LEXICASE NUMBER OF COHORTS MUST MATCH BETWEEN TRAITS AND POPULATION" << std::endl;
+    exit(-1);
+  }
+
+  // Set all the numbers so we can generate the cohorts!
+  coh_pop_num = coh_numb;
+  coh_pop_sze = coh_size;
+  coh_trt_num = trt_numb;
+  coh_trt_sze = trt_size;
+
+  std::cerr << "COHORT LEXICASE SYMMETRY MET!" << std::endl;
 }
 
 
