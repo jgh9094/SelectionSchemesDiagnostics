@@ -11,8 +11,8 @@ SELECTIONS:
 [X]: Tournament
 [X]: Lexicase
 [X]: Drift
-[P]: Cohort Lexicase
-[]: Down Sampled Lexicase
+[X]: Cohort Lexicase
+[P]: Down Sampled Lexicase
 []: EcoEA
 []: Roulette
 
@@ -64,7 +64,7 @@ using fit_lex_t = std::function<double(DiaOrg &, size_t)>;
 using eva_fun = std::function<void(DiaOrg &)> ;
 using sel_fun = std::function<ids_t()>;
 using tar_t = emp::vector<double>;
-using cls_t = emp::vector<emp::vector<size_t>>;
+using cls_t = emp::vector<ids_t>;
 
 class DiaWorld : public emp::World<DiaOrg> {
 
@@ -104,12 +104,6 @@ class DiaWorld : public emp::World<DiaOrg> {
       InitialSetup();
       // Initialize pointer
       random_ptr = emp::NewPtr<emp::Random>(config.SEED());
-
-      CohortLexicaseSymmetry();
-      CreateCohortsCLS();
-      PrintCohorts();
-      exit(-1);
-
       // If not multiobjective, then we can set all traits to the same value
       if(!config.MULTIOBJECTIVE()) {
         std::cerr << "MULTIOBJECTIVE: False" << std::endl;
@@ -166,6 +160,8 @@ class DiaWorld : public emp::World<DiaOrg> {
     void CohortLexicaseSelection();           ///< Set Lexicase Selection Algorithm
     void CreateCohortsCLS();                  ///< Create the cohorts for both population and traits
     void CohortLexicaseSymmetry();            ///< Checks if the cohort proportions work out
+    void CohortLexicaseExploit();             ///< Set fitness function as Exploitation
+    void CohortLexicaseStructExploit();       ///< Set fitness function as Structured Exploitation
 
 
     /* Functions for Evaluation set up */
@@ -595,13 +591,91 @@ void DiaWorld::DriftSelection() {
 }
 
 
-/* Function for Drift Selction set up */
+/* Function for Cohort Lexicase Selction set up */
 
 void DiaWorld::CohortLexicaseFitnessFun() {          ///< Set fitness function for Lexicase
+  // Set up the cases to set the fitness fuction
+  switch (config.DIAGNOSTIC()) {
+    case 0:  // Exploitation
+      CohortLexicaseExploit();
+      break;
 
+    case 1:  // Structured Exploitation
+      CohortLexicaseStructExploit();
+      break;
+
+    case 2:  // Ecology Diagnostic - Contradictory K Values
+      /* code */
+      break;
+
+    case 3:  // Ecology Diagnostic
+      /* code */
+      break;
+
+    case 4:  // Specialist
+      /* code */
+      break;
+
+    case 5:  // Hints
+      /* code */
+      break;
+
+    case 6:  // Bias
+      /* code */
+      break;
+
+    case 7:  // Deceptive
+      /* code */
+      break;
+
+    case 8:  // Overfitting - Noise
+      /* code */
+      break;
+
+    case 9:  // Exploration
+      /* code */
+      break;
+
+    default:  // Error if we reach here
+      std::cerr << "TRYING TO SET A DIAGNOSTIC THAT DOESN'T EXIST" << std::endl;
+      exit(-1);
+      break;
+  }
 }
 
 void DiaWorld::CohortLexicaseSelection() {           ///< Set Lexicase Selection Algorithm
+  // What are we doing?
+  std::cerr << "Cohort Lexicase Selection" << std::endl;
+
+  // Check if we even have test cases lol
+  emp_assert(trt_ids.size() > 0, trt_ids.size());
+  emp_assert(pop_ids.size() == config.POP_SIZE(), pop_ids.size());
+
+  // Set the selection lambda
+  select = [this] () {
+    // Will hold the parents ids for reproduction
+    ids_t parents;
+
+    // Go through each cohort in the pop_coh and trt_coh respectively
+    for(int c = 0; c < coh_pop_num; c++) {
+      // Get a cohort of test cases
+      ids_t traits = trt_coh[c];
+      // Loop coh_pop_sze time to get the number of parents for a pop_coh cohort
+      for(int i = 0; i < coh_pop_sze ; i++) {
+        // Shuffle the traits
+        emp::Shuffle(*random_ptr, traits);
+        // Get list of org ids in specific cohort
+        ids_t round_winners = pop_coh[c];
+        // Get the winning parent
+        size_t winner = LexicaseWinner(round_winners, traits);
+        // Store winning parent ID
+        parents.push_back(winner);
+      }
+    }
+
+    emp_assert(parents.size() == config.POP_SIZE(), parents.size());
+    return parents;
+  };
 
 }
 
@@ -686,6 +760,20 @@ void DiaWorld::CohortLexicaseSymmetry() {
   for(auto & v : trt_coh) {v.resize(coh_trt_sze);}
 
   std::cerr << "COHORT LEXICASE SYMMETRY MET!" << std::endl;
+}
+
+void DiaWorld::CohortLexicaseExploit() {           ///< Set fitness function as Exploitation
+  std::cerr << "Exploitation" << std::endl;
+  fitness_lex = [this] (DiaOrg & org, size_t i) {
+    return org.GetScore(i);
+  };
+}
+
+void DiaWorld::CohortLexicaseStructExploit() {     ///< Set fitness function as Structured Exploitation
+  std::cerr << "Exploitation" << std::endl;
+  fitness_lex = [this] (DiaOrg & org, size_t i) {
+    return org.GetScore(i);
+  };
 }
 
 
