@@ -194,7 +194,8 @@ class DiaWorld : public emp::World<DiaOrg> {
 
 /* Functions for initial experiment set up */
 
-void DiaWorld::InitialSetup() {     ///< Do all the initial set up
+///< Do all the initial set up
+void DiaWorld::InitialSetup() {
   Reset();
   SetPopStruct_Mixed(true);
   SetMutations();
@@ -206,7 +207,8 @@ void DiaWorld::InitialSetup() {     ///< Do all the initial set up
   SetCSVHeaders();
 }
 
-void DiaWorld::SetOnUpdate() {      ///< Set up world configurations
+///< Set up world configurations
+void DiaWorld::SetOnUpdate() {
   OnUpdate([this](size_t) {
     // Evaluate all organisms
     Evaluate();
@@ -219,7 +221,8 @@ void DiaWorld::SetOnUpdate() {      ///< Set up world configurations
   });
 }
 
-void DiaWorld::SetMutations() {     ///< Set up the mutations parameters
+///< Set up the mutations parameters
+void DiaWorld::SetMutations() {
   // Set up the worlds mutation function!
   SetMutFun([this](DiaOrg & org, emp::Random & random) {
     // Get org genome!
@@ -243,7 +246,8 @@ void DiaWorld::SetMutations() {     ///< Set up the mutations parameters
   });
 }
 
-void DiaWorld::SetSelectionFun() {  ///< Set up the selection function
+///< Set up the selection function
+void DiaWorld::SetSelectionFun() {
   switch (config.SELECTION())
   {
   case 0:  // Tournament
@@ -268,7 +272,8 @@ void DiaWorld::SetSelectionFun() {  ///< Set up the selection function
   }
 }
 
-void DiaWorld::SetEvaluationFun() {        ///< Set up the Evaluation function
+///< Set up the Evaluation function
+void DiaWorld::SetEvaluationFun() {
   // What function are using to evaluate?
   std::cerr << "Evaluation Function: ";
   switch (config.DIAGNOSTIC())
@@ -288,7 +293,8 @@ void DiaWorld::SetEvaluationFun() {        ///< Set up the Evaluation function
   }
 }
 
-void DiaWorld::SetOnOffspringReady() {  ///< Set up the OnOffspringReady function
+///< Set up the OnOffspringReady function
+void DiaWorld::SetOnOffspringReady() {
   // Create lambda function
   OnOffspringReady([this](DiaOrg & org, size_t parent_pos) {
     // Mutate organism if possible
@@ -299,7 +305,8 @@ void DiaWorld::SetOnOffspringReady() {  ///< Set up the OnOffspringReady functio
   });
 }
 
-void DiaWorld::InitializeWorld() {  ///< Set initial population of orgs
+///< Set initial population of orgs
+void DiaWorld::InitializeWorld() {
   // Fill the workd with requested population size!
   DiaOrg org(config.K_TRAITS());
   Inject(org.GetGenome(), config.POP_SIZE());
@@ -308,6 +315,7 @@ void DiaWorld::InitializeWorld() {  ///< Set initial population of orgs
 
 /* Functions for Tournament Selection set up */
 
+///< Set fitness function for Tournament
 void DiaWorld::TournamentFitnessFun() {
   // Set up the cases to set the fitness fuction
   switch (config.DIAGNOSTIC()) {
@@ -358,6 +366,7 @@ void DiaWorld::TournamentFitnessFun() {
   }
 }
 
+///< Set Tournament Selection Algorithm
 void DiaWorld::TournamentSelection() {
   std::cerr << "Tournament Selection" << std::endl;
   emp_assert(config.TOUR_SIZE() <= config.POP_SIZE(), config.TOUR_SIZE());
@@ -397,6 +406,7 @@ void DiaWorld::TournamentSelection() {
   };
 }
 
+///< Set fitness function as Exploitation
 void DiaWorld::TournamentExploit(){
   std::cerr << "Standard Exploitation" << std::endl;
   fitness_agg = [this] (DiaOrg & org) {
@@ -405,7 +415,9 @@ void DiaWorld::TournamentExploit(){
   };
 }
 
-void DiaWorld::TournamentStructExploit() {    ///< Set fitness function as Structured Exploitation
+///< Set fitness function as Structured Exploitation
+///< Set fitness function as Structured Exploitation
+void DiaWorld::TournamentStructExploit() {
   std::cerr << "Structured Exploitation" << std::endl;
   fitness_agg = [this] (DiaOrg & org) {
     // Return the sum of errors!
@@ -416,7 +428,8 @@ void DiaWorld::TournamentStructExploit() {    ///< Set fitness function as Struc
 
 /* Functions for Lexicase Selection set up */
 
-void DiaWorld::LexicaseFitnessFun() {        ///< Set fitness function for Lexicase
+///< Set fitness function for Lexicase
+void DiaWorld::LexicaseFitnessFun() {
   // Set up the cases to set the fitness fuction
   switch (config.DIAGNOSTIC()) {
     case 0:  // Exploitation
@@ -466,7 +479,8 @@ void DiaWorld::LexicaseFitnessFun() {        ///< Set fitness function for Lexic
   }
 }
 
-void DiaWorld::LexicaseSelection() {         ///< Set Lexicase Selection Algorithm
+///< Set Lexicase Selection Algorithm
+void DiaWorld::LexicaseSelection() {
   // What are we doing?
   std::cerr << "Lexicase Selection" << std::endl;
 
@@ -543,14 +557,17 @@ size_t DiaWorld::LexicaseWinner(ids_t & round_pop, ids_t const & test_cases) {
   return scores.begin()->second[winner];
 }
 
-void DiaWorld::LexicaseExploit() {           ///< Set fitness function as Exploitation
+///< Set fitness function as Exploitation
+void DiaWorld::LexicaseExploit() {
   std::cerr << "Exploitation" << std::endl;
   fitness_lex = [this] (DiaOrg & org, size_t i) {
     return org.GetScore(i);
   };
 }
 
-void DiaWorld::LexicaseStructExploit() {     ///< Set fitness function as Structured Exploitation
+///< Set fitness function as Structured Exploitation
+///< Set fitness function as Structured Exploitation
+void DiaWorld::LexicaseStructExploit() {
   std::cerr << "Exploitation" << std::endl;
   fitness_lex = [this] (DiaOrg & org, size_t i) {
     return org.GetScore(i);
@@ -560,6 +577,7 @@ void DiaWorld::LexicaseStructExploit() {     ///< Set fitness function as Struct
 
 /* Function for Drift Selction set up */
 
+///< Drift has no fitness function to optimize!
 void DiaWorld::DriftFitnessFun() {
   /* Fitness does not matter for this case
      but function if user would like the user
@@ -568,6 +586,7 @@ void DiaWorld::DriftFitnessFun() {
      std::cerr << "Drift Requires No Fitness!" << std::endl;
 }
 
+///< Set select lambda with drift selection
 void DiaWorld::DriftSelection() {
   // What are we doing?
   std::cerr << "Drift Selection" << std::endl;
@@ -593,7 +612,8 @@ void DiaWorld::DriftSelection() {
 
 /* Function for Cohort Lexicase Selction set up */
 
-void DiaWorld::CohortLexicaseFitnessFun() {          ///< Set fitness function for Lexicase
+///< Set fitness function for Lexicase
+void DiaWorld::CohortLexicaseFitnessFun() {
   // Set up the cases to set the fitness fuction
   switch (config.DIAGNOSTIC()) {
     case 0:  // Exploitation
@@ -643,7 +663,8 @@ void DiaWorld::CohortLexicaseFitnessFun() {          ///< Set fitness function f
   }
 }
 
-void DiaWorld::CohortLexicaseSelection() {           ///< Set Lexicase Selection Algorithm
+///< Set Lexicase Selection Algorithm
+void DiaWorld::CohortLexicaseSelection() {
   // What are we doing?
   std::cerr << "Cohort Lexicase Selection" << std::endl;
 
@@ -679,7 +700,8 @@ void DiaWorld::CohortLexicaseSelection() {           ///< Set Lexicase Selection
 
 }
 
-void DiaWorld::CreateCohortsCLS() {           ///< Set Lexicase Selection Algorithm
+///< Create cohorts for lexicase selection
+void DiaWorld::CreateCohortsCLS() {
   // Make sure that we have everything set up accordingly
   emp_assert(coh_pop_num == -1, coh_pop_num);
   emp_assert(coh_pop_sze == -1, coh_pop_sze);
@@ -762,14 +784,16 @@ void DiaWorld::CohortLexicaseSymmetry() {
   std::cerr << "COHORT LEXICASE SYMMETRY MET!" << std::endl;
 }
 
-void DiaWorld::CohortLexicaseExploit() {           ///< Set fitness function as Exploitation
+///< Set fitness function as Exploitation
+void DiaWorld::CohortLexicaseExploit() {
   std::cerr << "Exploitation" << std::endl;
   fitness_lex = [this] (DiaOrg & org, size_t i) {
     return org.GetScore(i);
   };
 }
 
-void DiaWorld::CohortLexicaseStructExploit() {     ///< Set fitness function as Structured Exploitation
+///< Set fitness function as Structured Exploitation
+void DiaWorld::CohortLexicaseStructExploit() {
   std::cerr << "Exploitation" << std::endl;
   fitness_lex = [this] (DiaOrg & org, size_t i) {
     return org.GetScore(i);
@@ -779,7 +803,8 @@ void DiaWorld::CohortLexicaseStructExploit() {     ///< Set fitness function as 
 
 /* Functions ran during experiment */
 
-void DiaWorld::Evaluate() {          ///< Evaluate all orgs on individual test cases!
+///< Evaluate all orgs on individual test cases!
+void DiaWorld::Evaluate() {
   //Make sure pop is the correct size
   emp_assert(pop.size() == config.POP_SIZE(), pop.size());
   emp_assert(target.size() == config.K_TRAITS(), target.size());
@@ -798,11 +823,13 @@ void DiaWorld::Evaluate() {          ///< Evaluate all orgs on individual test c
   }
 }
 
-ids_t DiaWorld::Selection() {       ///< Call when its time to select parents
+///< Call when its time to select parents
+ids_t DiaWorld::Selection() {
   return select();
 }
 
-void DiaWorld::Births(ids_t parents) {            ///< Call when its time to produce offsprings from parents
+///< Call when its time to produce offsprings from parents
+void DiaWorld::Births(ids_t parents) {
   // Go through the parent ids and give birth!
   for(auto & id : parents) {
     DoBirth(GetGenomeAt(id), id);
@@ -812,7 +839,8 @@ void DiaWorld::Births(ids_t parents) {            ///< Call when its time to pro
 
 /* Functions for Evaluation set up */
 
-void DiaWorld::EvalExploit() {      ///< Evaluate organisms with exploitation metrics
+///< Evaluate organisms with exploitation metrics
+void DiaWorld::EvalExploit() {
   std::cerr << "Exploitation" << std::endl;
   // Set the evaluation function
   evaluate = [this] (DiaOrg & org) {
@@ -823,7 +851,8 @@ void DiaWorld::EvalExploit() {      ///< Evaluate organisms with exploitation me
   };
 }
 
-void DiaWorld::EvalStructExploit() {         ///< Evalate organisms with structured exploitation metric
+///< Evalate organisms with structured exploitation metric
+void DiaWorld::EvalStructExploit() {
   std::cerr << "Structured Exploitation" << std::endl;
   // Set up structured exploitation function
   evaluate = [this] (DiaOrg & org) {
@@ -834,7 +863,8 @@ void DiaWorld::EvalStructExploit() {         ///< Evalate organisms with structu
 
 /* Functions for gathering data */
 
-void DiaWorld::SetCSVHeaders() {                    ///< Set up all headers of csv files!
+///< Set up all headers of csv files!
+void DiaWorld::SetCSVHeaders() {
   std::cerr << "SETTING CSV HEADER" << std::endl;
 
   // Initialize data trackers
@@ -856,14 +886,16 @@ void DiaWorld::SetCSVHeaders() {                    ///< Set up all headers of c
   pop_avg_err << "Gen,Error" << std::endl;
 }
 
-void DiaWorld::GatherData(size_t up) {               ///< Will call all other functions to gather data
+///< Will call all other functions to gather data
+void DiaWorld::GatherData(size_t up) {
   AverageTraitError(up);
   MinimumTraitError(up);
   CountTraitSolution(up);
   AveragePopError(up);
 }
 
-void DiaWorld::CountTraitSolution(size_t up) {            ///< Given some threshold, how many solutions do we have?
+///< Given some threshold, how many solutions do we have?
+void DiaWorld::CountTraitSolution(size_t up) {
   // Hold solution counts
   emp::vector<size_t> record;
   record.resize(config.K_TRAITS(), 0);
@@ -891,7 +923,8 @@ void DiaWorld::CountTraitSolution(size_t up) {            ///< Given some thresh
   trt_sol_cnt << update << std::endl;
 }
 
-void DiaWorld::AverageTraitError(size_t up) {             ///< Average error on a trait, per population, per update
+///< Average error on a trait, per population, per update
+void DiaWorld::AverageTraitError(size_t up) {
   // Hold solution counts
   emp::vector<double> record;
   record.resize(config.K_TRAITS(), 0.0);
@@ -920,7 +953,8 @@ void DiaWorld::AverageTraitError(size_t up) {             ///< Average error on 
   trt_avg_err << update << std::endl;
 }
 
-void DiaWorld::MinimumTraitError(size_t up) {             ///< Get best error per trait
+///< Get best error per trait
+void DiaWorld::MinimumTraitError(size_t up) {
   // Hold solution counts
   emp::vector<double> record;
   record.resize(config.K_TRAITS(), 100000.0);
@@ -948,7 +982,8 @@ void DiaWorld::MinimumTraitError(size_t up) {             ///< Get best error pe
   trt_min_err << update << std::endl;
 }
 
-void DiaWorld::AveragePopError(size_t up) {             ///< Average error for a population per update
+///< Average error for a population per update
+void DiaWorld::AveragePopError(size_t up) {
   // Hold population error
   double error = 0.0;
 
@@ -966,7 +1001,8 @@ void DiaWorld::AveragePopError(size_t up) {             ///< Average error for a
 
 /* DEBUGGINGGGGGGGGGG */
 
-void DiaWorld::PrintCohorts() {      ///< Will print all of the cohorts
+///< Will print all of the cohorts
+void DiaWorld::PrintCohorts() {
   // Print everything for population!
   std::cerr << "POPULATION COHORTS:" << std::endl;
   for(size_t c = 0; c < coh_pop_num; c++) {
