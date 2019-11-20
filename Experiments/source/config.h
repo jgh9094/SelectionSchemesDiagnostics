@@ -14,7 +14,7 @@ EMP_BUILD_CONFIG( DiaWorldConfig,
   VALUE(MULTIOBJECTIVE,     bool,       false,   "Will organsims be scored on multiple objectives"),
   VALUE(SOLUTION_THRESH,    double,     3.0,     "Threshold to determine if a internal value is a solution"),
   VALUE(K_TRAITS,           size_t,     40,      "How many internal values should each org have?"),
-  VALUE(SELECTION,          size_t,     2,       "Which selection are we doing? \n0: Tournament\n1: Lexicase\n2: Drift\n3: Cohort Lexicase\n4: Down Sampled Lexicase"),
+  VALUE(SELECTION,          size_t,     3,       "Which selection are we doing? \n0: Tournament\n1: Lexicase\n2: Drift\n3: Cohort Lexicase\n4: Down Sampled Lexicase"),
   VALUE(DIAGNOSTIC,         size_t,     0,       "Which diagnostic are we doing? \n0: Exploitation\n1: Structured Exploitation\n2: Ecology Diagnostic - Contradictory K Values"
                                                  "\n3: Ecology Diagnostic\n4: Specialist\n5: Hints\n6: Bias\n7: Deceptive\n8: Overfitting - Noise\n9: Exploration"),
 
@@ -22,8 +22,11 @@ EMP_BUILD_CONFIG( DiaWorldConfig,
   VALUE(TOUR_SIZE,      size_t,     7,      "How many organimsms are in a tournament?"),
 
   GROUP(COHORTLEX, "What are the configurations for cohort lexicae selection."),
-  VALUE(CLS_POP_PROP,      double,     .2,      "How many organimsms are in a tournament?"),
-  VALUE(CLS_TRT_PROP,      double,     .1,      "How many organimsms are in a tournament?"),
+  VALUE(CLS_POP_PROP,      double,     .2,      "Proportion of orgs in a cohort?"),
+  VALUE(CLS_TRT_PROP,      double,     .1,      "Proportion of traits in a cohort?"),
+
+  GROUP(DOWNSAMPLELEX, "What are the configurations for cohort lexicae selection."),
+  VALUE(DLS_TRT_PROP,      double,     .2,      "Proportion of orgs in a cohort?"),
 
 
   GROUP(MUTATIONS, "Various mutation rates for organisms"),
