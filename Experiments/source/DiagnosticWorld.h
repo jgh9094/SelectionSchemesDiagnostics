@@ -79,7 +79,7 @@ class DiaWorld : public emp::World<DiaOrg> {
 
     /* Population, Org, and Traits */
     ids_t pop_ids;                      ///< Population IDs for randomly picking from the world
-    ids_t trait_ids;                    ///< Vector holding ids for each trait we are evaluating
+    ids_t trt_ids;                    ///< Vector holding ids for each trait we are evaluating
     tar_t target;                       ///< Targets that organisms are trying to reach
     cls_t pop_coh;                      ///< Hold the organism cohorts
     cls_t trt_coh;                      ///< Hold the trait cohorts
@@ -96,15 +96,19 @@ class DiaWorld : public emp::World<DiaOrg> {
 
   public:
     DiaWorld(DiaWorldConfig & _config) : config(_config) {      ///< Constructor
-      CohortLexicaseSymmetry();
       // Initialize the vector to poplulation pop_ids
       for(size_t i = 0; i < config.POP_SIZE(); i++) {pop_ids.push_back(i);}
-      // Initialze the  vector t0 traits trait_ids
-      for(size_t i = 0; i < config.K_TRAITS(); i++) {trait_ids.push_back(i);}
+      // Initialze the  vector t0 traits trt_ids
+      for(size_t i = 0; i < config.K_TRAITS(); i++) {trt_ids.push_back(i);}
       // Set requested selection and fitness functions
       InitialSetup();
       // Initialize pointer
       random_ptr = emp::NewPtr<emp::Random>(config.SEED());
+
+      CohortLexicaseSymmetry();
+      CreateCohortsCLS();
+      PrintCohorts();
+      exit(-1);
 
       // If not multiobjective, then we can set all traits to the same value
       if(!config.MULTIOBJECTIVE()) {
@@ -186,6 +190,10 @@ class DiaWorld : public emp::World<DiaOrg> {
     void AverageTraitError(size_t up);           ///< Average error on a trait, per population, per update
     void MinimumTraitError(size_t up);           ///< Get best error per trait
     void AveragePopError(size_t up);             ///< Average error for a population per update
+
+    /* DEBUGGINGGGGGGGGGG */
+
+    void PrintCohorts();      ///< Will print all of the cohorts
 };
 
 /* Functions for initial experiment set up */
@@ -467,7 +475,7 @@ void DiaWorld::LexicaseSelection() {         ///< Set Lexicase Selection Algorit
   std::cerr << "Lexicase Selection" << std::endl;
 
   // Check if we even have test cases lol
-  emp_assert(trait_ids.size() > 0, trait_ids.size());
+  emp_assert(trt_ids.size() > 0, trt_ids.size());
   emp_assert(pop_ids.size() == config.POP_SIZE(), pop_ids.size());
 
   // Set the selction lambda
@@ -478,11 +486,11 @@ void DiaWorld::LexicaseSelection() {         ///< Set Lexicase Selection Algorit
     // Keep looping through until we have enough parents
     while(parents.size() != config.POP_SIZE()) {
       // Shuffle test cases
-      emp::Shuffle(*random_ptr, trait_ids);
+      emp::Shuffle(*random_ptr, trt_ids);
       // this list of parents will be used by lexicase to single out a parent
       ids_t round_winners = pop_ids;
       // Get the winning parent
-      size_t winner = LexicaseWinner(round_winners, trait_ids);
+      size_t winner = LexicaseWinner(round_winners, trt_ids);
       // Add parent to the next gen
       parents.push_back(winner);
     }
@@ -598,14 +606,44 @@ void DiaWorld::CohortLexicaseSelection() {           ///< Set Lexicase Selection
 }
 
 void DiaWorld::CreateCohortsCLS() {           ///< Set Lexicase Selection Algorithm
+  // Make sure that we have everything set up accordingly
+  emp_assert(coh_pop_num == -1, coh_pop_num);
+  emp_assert(coh_pop_sze == -1, coh_pop_sze);
+  emp_assert(coh_trt_num == -1, coh_trt_num);
+  emp_assert(coh_trt_sze == -1, coh_trt_sze);
 
+  // Shuffle the population ids
+  ids_t pop_order = pop_ids;
+  emp::Shuffle(*random_ptr, pop_order);
+
+  // Now place them in the appropiate cohort
+  for(size_t i = 0; i < pop_order.size(); i++) {
+    // What cohort and position are we placing in?
+    size_t coh = i / coh_pop_sze;
+    size_t pos = i % coh_pop_sze;
+    // Place in the cohort
+    pop_coh[coh][pos] = pop_order[i];
+  }
+
+  // Shuffle the trait ids
+  ids_t trt_order = trt_ids;
+  emp::Shuffle(*random_ptr, trt_order);
+
+  // Now place them in the appropiate cohort
+  for(size_t i = 0; i < trt_order.size(); ++i) {
+    // What cohort and position are placing in?
+    size_t coh = i / coh_trt_sze;
+    size_t pos = i % coh_trt_sze;
+    // Place in cohort
+    trt_coh[coh][pos] = trt_order[i];
+  }
 }
 
 ///< Checks if the cohort proportions work out
 void DiaWorld::CohortLexicaseSymmetry() {
   // Check some math real quick for the population
-  int coh_size = config.POP_SIZE() * config.CLS_PROP();
-  int coh_numb = config.POP_SIZE() / coh_size;
+  int coh_numb = config.POP_SIZE() * config.CLS_POP_PROP();
+  int coh_size = config.POP_SIZE() / coh_numb;
   size_t total = coh_size * coh_numb;
   if(total != config.POP_SIZE()) {
     std::cerr << "coh_size=" << coh_size << std::endl;
@@ -616,10 +654,13 @@ void DiaWorld::CohortLexicaseSymmetry() {
   }
 
   // Check some math real quick for the traits
-  int trt_size = config.K_TRAITS() * config.CLS_PROP();
-  int trt_numb = config.K_TRAITS() / trt_size;
+  int trt_numb = config.K_TRAITS() * config.CLS_TRT_PROP();
+  int trt_size = config.K_TRAITS() / trt_numb;
   size_t totall = trt_size * trt_numb;
-  if(totall != config.POP_SIZE()) {
+  if(totall != config.K_TRAITS()) {
+    std::cerr << "trt_size=" << trt_size << std::endl;
+    std::cerr << "trt_numb=" << trt_numb << std::endl;
+    std::cerr << "totall=" << totall << std::endl;
     std::cerr << "COHORT LEXICASE PROPORTION MUST ALLOW FOR SYMMETRY BETWEEN TRAIT COHORTS" << std::endl;
     exit(-1);
   }
@@ -627,7 +668,7 @@ void DiaWorld::CohortLexicaseSymmetry() {
   // Make sure there an equal number of cohorts between traits and population
   if(coh_numb != trt_numb) {
     std::cerr << "trt_numb=" << trt_numb << std::endl;
-    std::cerr << "trt_size=" << trt_size << std::endl;
+    std::cerr << "coh_numb=" << coh_numb << std::endl;
     std::cerr << "COHORT LEXICASE NUMBER OF COHORTS MUST MATCH BETWEEN TRAITS AND POPULATION" << std::endl;
     exit(-1);
   }
@@ -637,6 +678,12 @@ void DiaWorld::CohortLexicaseSymmetry() {
   coh_pop_sze = coh_size;
   coh_trt_num = trt_numb;
   coh_trt_sze = trt_size;
+
+  // Set all lengths for cohorts
+  pop_coh.resize(coh_pop_num);
+  for(auto & v : pop_coh) {v.resize(coh_pop_sze);}
+  trt_coh.resize(coh_trt_num);
+  for(auto & v : trt_coh) {v.resize(coh_trt_sze);}
 
   std::cerr << "COHORT LEXICASE SYMMETRY MET!" << std::endl;
 }
@@ -828,5 +875,30 @@ void DiaWorld::AveragePopError(size_t up) {             ///< Average error for a
   pop_avg_err << std::to_string(up) + "," + std::to_string(error) << std::endl;
 }
 
+
+/* DEBUGGINGGGGGGGGGG */
+
+void DiaWorld::PrintCohorts() {      ///< Will print all of the cohorts
+  // Print everything for population!
+  std::cerr << "POPULATION COHORTS:" << std::endl;
+  for(size_t c = 0; c < coh_pop_num; c++) {
+    std::cerr << "COH-" << c << ": ";
+    for(size_t i = 0; i < coh_pop_sze; i++) {
+      std::cerr << pop_coh[c][i] << ", ";
+    }
+    std::cerr << std::endl;
+  }
+  std::cerr << std::endl;
+
+  // Print everything for traits!
+  std::cerr << "TRAIT COHORTS:" << std::endl;
+  for(size_t c = 0; c < coh_trt_num; c++) {
+    std::cerr << "COH-" << c << ": ";
+    for(size_t i = 0; i < coh_trt_sze; i++) {
+      std::cerr << trt_coh[c][i] << ", ";
+    }
+    std::cerr << std::endl;
+  }
+}
 
 #endif
