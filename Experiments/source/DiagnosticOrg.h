@@ -70,7 +70,7 @@ class DiaOrg {
 
     /* Diagnostic specific scoring */
 
-    void ExploitError(size_t & i, double & target);             ///< Will calculate the Exploitation Error
+    void ExploitError(const genome_t & target);             ///< Will calculate the Exploitation Error
     void StructExploitError(const genome_t & target);           ///< Will calculate the Structured Exploitation Error
 
 
@@ -119,8 +119,16 @@ double DiaOrg::TotalSumScores() {
 
 /* Diagnostic specific scoring */
 
-void DiaOrg::ExploitError(size_t & i, double & target) {  ///< Will calculate the Exploitation Error
-  DistanceError(i, target);
+void DiaOrg::ExploitError(const genome_t & target) {  ///< Will calculate the Exploitation Error
+  // Check some stuff beforehand
+  emp_assert(target.size() > 0, target.size());
+  emp_assert(target.size() == K, target.size());
+  emp_assert(score.size() == K, score.size());
+
+  // Loop through the traits and score them
+  for(size_t i = 0; i < target.size(); i++) {
+    DistanceError(i, target[i]);
+  }
 }
 
 void DiaOrg::StructExploitError(const genome_t & target) { ///< Will calculate the Structured Exploitation Error
