@@ -168,7 +168,7 @@ class DiaWorld : public emp::World<DiaOrg> {
 
     void EvalExploit();               ///< Evaluate organisms with exploitation metric
     void EvalStructExploit();         ///< Evalate organisms with structured exploitation metric
-
+ 
 
     /* Functions ran during experiment */
 
