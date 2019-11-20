@@ -12,7 +12,7 @@ SELECTIONS:
 [X]: Lexicase
 [X]: Drift
 [X]: Cohort Lexicase
-[P]: Down Sampled Lexicase
+[X]: Down Sampled Lexicase
 []: EcoEA
 []: Roulette
 
@@ -545,9 +545,6 @@ size_t DiaWorld::LexicaseWinner(ids_t & round_pop, ids_t const & test_cases) {
   // Position trackers for test cases
   size_t tc = 0;
 
-  // Check if rounds_winners is the correct size at the beggining!
-  emp_assert(round_pop.size() == config.POP_SIZE(), round_pop.size());
-
   // Loop through all the test cases until we have a single winner or
   // run out of test cases to use! Will randomly select winner if more than one
   // at the end of the round.
@@ -733,10 +730,10 @@ void DiaWorld::CohortLexicaseSelection() {
 ///< Create cohorts for lexicase selection
 void DiaWorld::CreateCohortsCLS() {
   // Make sure that we have everything set up accordingly
-  emp_assert(coh_pop_num == -1, coh_pop_num);
-  emp_assert(coh_pop_sze == -1, coh_pop_sze);
-  emp_assert(coh_trt_num == -1, coh_trt_num);
-  emp_assert(coh_trt_sze == -1, coh_trt_sze);
+  emp_assert(coh_pop_num != -1, coh_pop_num);
+  emp_assert(coh_pop_sze != -1, coh_pop_sze);
+  emp_assert(coh_trt_num != -1, coh_trt_num);
+  emp_assert(coh_trt_sze != -1, coh_trt_sze);
 
   // Shuffle the population ids
   ids_t pop_order = pop_ids;
@@ -768,8 +765,8 @@ void DiaWorld::CreateCohortsCLS() {
 ///< Checks if the cohort proportions work out
 void DiaWorld::CohortLexicaseSymmetry() {
   // Check some math real quick for the population
-  int coh_numb = config.POP_SIZE() * config.CLS_POP_PROP();
-  int coh_size = config.POP_SIZE() / coh_numb;
+  int coh_size = config.POP_SIZE() * config.CLS_POP_PROP();
+  int coh_numb = config.POP_SIZE() / coh_size;
   size_t total = coh_size * coh_numb;
   if(total != config.POP_SIZE()) {
     std::cerr << "coh_size=" << coh_size << std::endl;
@@ -780,8 +777,8 @@ void DiaWorld::CohortLexicaseSymmetry() {
   }
 
   // Check some math real quick for the traits
-  int trt_numb = config.K_TRAITS() * config.CLS_TRT_PROP();
-  int trt_size = config.K_TRAITS() / trt_numb;
+  int trt_size = config.K_TRAITS() * config.CLS_TRT_PROP();
+  int trt_numb = config.K_TRAITS() / trt_size;
   size_t totall = trt_size * trt_numb;
   if(totall != config.K_TRAITS()) {
     std::cerr << "trt_size=" << trt_size << std::endl;
@@ -922,12 +919,13 @@ void DiaWorld::DownSampleLexicaseSelection() {
 ///< Checks if the cohort proportions work out
 void DiaWorld::DownSampleLexicaseValidity() {
   // We need to see if the proportion is even valid
-  if(config.DLS_TRT_PROP() > 0 || config.DLS_TRT_PROP() <= 1) {
+  if(config.DLS_TRT_PROP() < 0 || config.DLS_TRT_PROP() > 1) {
     std::cerr << "config.DLS_TRT_PROP() IS NOT IN RANGE OF (0,1]" << std::endl;
     exit(-1);
   }
 
   sample_size = config.DLS_TRT_PROP() * (double) config.K_TRAITS();
+  std::cerr << "sample_size=" << sample_size << std::endl;
 }
 
 ///< Set fitness function as Exploitation
