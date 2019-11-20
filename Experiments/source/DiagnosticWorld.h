@@ -79,14 +79,19 @@ class DiaWorld : public emp::World<DiaOrg> {
 
     /* Population, Org, and Traits */
     ids_t pop_ids;                      ///< Population IDs for randomly picking from the world
-    ids_t trt_ids;                    ///< Vector holding ids for each trait we are evaluating
+    ids_t trt_ids;                      ///< Vector holding ids for each trait we are evaluating
     tar_t target;                       ///< Targets that organisms are trying to reach
+
+    /* Cohort Lexicase Specific */
     cls_t pop_coh;                      ///< Hold the organism cohorts
     cls_t trt_coh;                      ///< Hold the trait cohorts
     int coh_pop_num = -1;               ///< Number of popluation cohorts
     int coh_pop_sze = -1;               ///< Size of each population cohort
     int coh_trt_num = -1;               ///< Number of trait cohorts
     int coh_trt_sze = -1;               ///< Size of each trait cohort
+
+    /* DownSampled Lexicase Specific */
+    ids_t trait_samp;                   ///< Sample of traits we are evaluating
 
     /* Data Tracking */
     std::fstream trt_sol_cnt;         ///< Track number of solutions for a trait per update
@@ -148,13 +153,13 @@ class DiaWorld : public emp::World<DiaOrg> {
     void LexicaseStructExploit();                                             ///< Set fitness function as Structured Exploitation
 
 
-    /* Function for Drift Selction set up */
+    /* Functions for Drift Selction set up */
 
     void DriftFitnessFun();
     void DriftSelection();
 
 
-    /* Function for Drift Selction set up */
+    /* Functions for Drift Selction set up */
 
     void CohortLexicaseFitnessFun();          ///< Set fitness function for Lexicase
     void CohortLexicaseSelection();           ///< Set Lexicase Selection Algorithm
@@ -163,10 +168,19 @@ class DiaWorld : public emp::World<DiaOrg> {
     void CohortLexicaseExploit();             ///< Set fitness function as Exploitation
     void CohortLexicaseStructExploit();       ///< Set fitness function as Structured Exploitation
 
+    /* Functions for DownSample Lexicase */
+
+    void DownSampleLexicaseFitnessFun();          ///< Set fitness function for DownSample Lexicase
+    void DownSampleLexicaseSelection();           ///< Set Lexicase Selection Algorithm
+    void CreateSampleDSL();                       ///< Create the sample of traits we are evaluating
+    void DownSampleLexicaseValidity();            ///< Checks if the cohort proportions work out
+    void DownSampleLexicaseExploit();             ///< Set fitness function as Exploitation
+    void DownSampleLexicaseStructExploit();       ///< Set fitness function as Structured Exploitation
+
 
     /* Functions for Evaluation set up */
 
-    void EvalExploit();               ///< Evaluate organisms with exploitation 
+    void EvalExploit();               ///< Evaluate organisms with exploitation
     void EvalStructExploit();         ///< Evalate organisms with structured exploitation
 
 
@@ -261,8 +275,15 @@ void DiaWorld::SetSelectionFun() {
     break;
 
   case 2: // Drift
-    std::cerr << "SELECTION: "; DriftFitnessFun();
-    std::cerr << "DIAGNOSTIC: "; DriftSelection();
+    std::cerr << "SELECTION: "; DriftSelection();
+    std::cerr << "DIAGNOSTIC: "; DriftFitnessFun();
+    break;
+
+  case 3: // Cohort Lexicase
+    // Check if conditions are met
+    CohortLexicaseSymmetry();
+    std::cerr << "SELECTION: "; CohortLexicaseSelection();
+    std::cerr << "DIAGNOSTIC: "; CohortLexicaseFitnessFun();
     break;
 
   default:
@@ -416,7 +437,6 @@ void DiaWorld::TournamentExploit(){
 }
 
 ///< Set fitness function as Structured Exploitation
-///< Set fitness function as Structured Exploitation
 void DiaWorld::TournamentStructExploit() {
   std::cerr << "Structured Exploitation" << std::endl;
   fitness_agg = [this] (DiaOrg & org) {
@@ -526,8 +546,6 @@ size_t DiaWorld::LexicaseWinner(ids_t & round_pop, ids_t const & test_cases) {
     // Clear scores for this round!
     scores.clear();
 
-    // std::cerr << tc << std::endl;
-
     // Loop through all the winners per round
     for(size_t oid : round_pop) {
       //Get trait we are looking at and org score on trait
@@ -565,7 +583,6 @@ void DiaWorld::LexicaseExploit() {
   };
 }
 
-///< Set fitness function as Structured Exploitation
 ///< Set fitness function as Structured Exploitation
 void DiaWorld::LexicaseStructExploit() {
   std::cerr << "Exploitation" << std::endl;
@@ -674,6 +691,9 @@ void DiaWorld::CohortLexicaseSelection() {
 
   // Set the selection lambda
   select = [this] () {
+    // Create a new cohort for pop and traits
+    CreateCohortsCLS();
+
     // Will hold the parents ids for reproduction
     ids_t parents;
 
@@ -801,6 +821,99 @@ void DiaWorld::CohortLexicaseStructExploit() {
 }
 
 
+/* Functions for DownSample Lexicase */
+
+///< Set fitness function for DownSample Lexicase
+void DiaWorld::DownSampleLexicaseFitnessFun() {
+  // Set up the cases to set the fitness fuction
+  switch (config.DIAGNOSTIC()) {
+    case 0:  // Exploitation
+      DownSampleLexicaseExploit();
+      break;
+
+    case 1:  // Structured Exploitation
+      DownSampleLexicaseStructExploit();
+      break;
+
+    case 2:  // Ecology Diagnostic - Contradictory K Values
+      /* code */
+      break;
+
+    case 3:  // Ecology Diagnostic
+      /* code */
+      break;
+
+    case 4:  // Specialist
+      /* code */
+      break;
+
+    case 5:  // Hints
+      /* code */
+      break;
+
+    case 6:  // Bias
+      /* code */
+      break;
+
+    case 7:  // Deceptive
+      /* code */
+      break;
+
+    case 8:  // Overfitting - Noise
+      /* code */
+      break;
+
+    case 9:  // Exploration
+      /* code */
+      break;
+
+    default:  // Error if we reach here
+      std::cerr << "TRYING TO SET A DIAGNOSTIC THAT DOESN'T EXIST" << std::endl;
+      exit(-1);
+      break;
+  }
+
+}
+
+///< Set Lexicase Selection Algorithm
+void DiaWorld::DownSampleLexicaseSelection() {
+  // What are we doing?
+  std::cerr << "DownSample Lexicase Selection" << std::endl;
+
+  // Check if we even have test cases lol
+  emp_assert(trt_ids.size() > 0, trt_ids.size());
+  emp_assert(pop_ids.size() == config.POP_SIZE(), pop_ids.size());
+
+  // Set the selection lambda
+  select = [this] () {
+    // Will hold all the parents
+    ids_t parents;
+
+    
+  };
+}
+
+///< Create the sample of traits we are evaluating
+void DiaWorld::CreateSampleDSL() {
+
+}
+
+///< Checks if the cohort proportions work out
+void DiaWorld::DownSampleLexicaseValidity() {
+
+}
+
+///< Set fitness function as Exploitation
+void DiaWorld::DownSampleLexicaseExploit() {
+
+}
+
+///< Set fitness function as Structured Exploitation
+void DiaWorld::DownSampleLexicaseStructExploit() {
+
+}
+
+
 /* Functions ran during experiment */
 
 ///< Evaluate all orgs on individual test cases!
@@ -844,10 +957,7 @@ void DiaWorld::EvalExploit() {
   std::cerr << "Exploitation" << std::endl;
   // Set the evaluation function
   evaluate = [this] (DiaOrg & org) {
-    for(size_t i = 0; i < target.size(); i++) {
-      // Calculate individual values
-      org.ExploitError(i, target[i]);
-    }
+    org.ExploitError(target);
   };
 }
 
