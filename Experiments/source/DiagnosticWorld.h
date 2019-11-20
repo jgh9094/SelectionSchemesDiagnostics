@@ -166,9 +166,9 @@ class DiaWorld : public emp::World<DiaOrg> {
 
     /* Functions for Evaluation set up */
 
-    void EvalExploit();               ///< Evaluate organisms with exploitation metric
-    void EvalStructExploit();         ///< Evalate organisms with structured exploitation metric
- 
+    void EvalExploit();               ///< Evaluate organisms with exploitation 
+    void EvalStructExploit();         ///< Evalate organisms with structured exploitation
+
 
     /* Functions ran during experiment */
 
