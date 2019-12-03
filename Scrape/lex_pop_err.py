@@ -41,12 +41,15 @@ def main():
         dir = data_directory + DIRECTORY + str(POP_SIZE[i]) + "__TRT_100__SEED_"
         # Iterate through all the seed replicates
         for s in range(1,REPLICATES+1):
+            # Set directory and load all the data
             dir = dir + str(s + (i * 100)) + POP_FILE
             data = pd.read_csv(dir)
-            print(data.head(1))
+
+            # Grab every nth
+            data = data.iloc[::snapshot, :]
+            print(data)
 
 
-            count = count + 1
             dir = data_directory + DIRECTORY + str(POP_SIZE[i]) + "__TRT_100__SEED_"
 
 
