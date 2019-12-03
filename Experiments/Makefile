@@ -1,12 +1,12 @@
 # Project-specific settings
 PROJECT := diagnostics
 EMP_DIR := ../../Empirical/source
-
+CEREAL_DIR := ../../Empirical/third-party/cereal/include
 # Flags to use regardless of compiler
-CFLAGS_all := -Wall -Wno-unused-function -std=c++17 -I$(EMP_DIR)/
+CFLAGS_all := -Wall -Wno-unused-function -std=c++17 -I$(EMP_DIR)/ -I$(CEREAL_DIR)/
 
 # Native compiler information
-CXX_nat := clang++
+CXX_nat := g++
 CFLAGS_nat := -O3 -DNDEBUG $(CFLAGS_all)
 CFLAGS_nat_debug := -g $(CFLAGS_all)
 
