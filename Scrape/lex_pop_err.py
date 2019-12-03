@@ -49,7 +49,7 @@ def main():
             frames.append(data)
             dir = data_directory + DIRECTORY + str(POP_SIZE[i]) + "__TRT_100__SEED_"
 
-        result = pd.concat(frames)
+        result = pd.concat(frames, axis=1, join='inner')
         result.to_csv("lex_avg_err_pop_" + str(POP_SIZE[i]) + ".csv", sep=',')
         print(result)
 
