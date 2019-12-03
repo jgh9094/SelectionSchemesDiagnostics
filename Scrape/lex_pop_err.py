@@ -45,7 +45,9 @@ def main():
 
             # Grab every nth
             data = data.iloc[::snapshot, COL]
+            print(dir)
             print(data)
+            print()
 
 
             dir = data_directory + DIRECTORY + str(POP_SIZE[i]) + "__TRT_100__SEED_"
