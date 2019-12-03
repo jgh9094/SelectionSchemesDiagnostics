@@ -50,7 +50,10 @@ def main():
             dir = data_directory + DIRECTORY + str(POP_SIZE[i]) + "__TRT_100__SEED_"
 
         result = pd.concat(frames)
+        result.to_csv("lex_avg_err_pop_" + str(POP_SIZE[i]) + ".csv", sep=',')
         print(result)
+
+
 
 
 if __name__ == "__main__":
