@@ -44,7 +44,7 @@ def main():
             data = pd.read_csv(dir)
 
             # Grab every nth
-            data = data.iloc[::snapshot, 2]
+            data = data.iloc[::snapshot, COL]
             print(data)
 
 
