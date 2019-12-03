@@ -1,41 +1,39 @@
 /// This is the world for DiaOrgs
 
 /* TODO SECTION
-
-[X]: Finished coding >:D
-[P]: Process of coding >:|
-[?]: Need to figure out still :?
-[]: Nothing done yet :)
-
-SELECTIONS:
-[X]: Tournament
-[X]: Lexicase
-[X]: Drift
-[X]: Cohort Lexicase
-[X]: Down Sampled Lexicase
-[]: EcoEA
-[]: Roulette
-
-DIAGNOSTICS:
-[X]: Exploitation
-[X]: Structured Exploitation
-[]: Contradictory K Traits Ecologoy
-[]: Weak Ecology
-[]: Specialist
-[]: Good & Bad Hints
-[]: Bias
-[]: Deceptive
-[]: Overfitting With Noise
-[?]: Overfitting With Smoothness
-[]: Exploitation
-
-DATA Analysis
-[X]: Triat Average Error
-[X]: Trait Min Error
-[X]: Trait Solution Count
-[X]: Population Average Error
-[]: Unique Genotypes
-[]: Unique Phenotypes
+ * [X]: Finished coding >:D
+ * [P]: Process of coding >:|
+ * [?]: Need to figure out still :?
+ * []: Nothing done yet :)
+ *
+ * SELECTIONS:
+ * [X]: Tournament
+ * [X]: Lexicase
+ * [X]: Drift
+ * [X]: Cohort Lexicase
+ * [X]: Down Sampled Lexicase
+ * []: EcoEA
+ * []: Roulette
+ *
+ * DIAGNOSTICS:
+ * [X]: Exploitation
+ * [X]: Structured Exploitation
+ * []: Contradictory K Traits Ecologoy
+ * []: Weak Ecology
+ * []: Specialist
+ * []: Good & Bad Hints
+ * []: Bias
+ * []: Deceptive
+ * []: Overfitting With Noise
+ * [?]: Overfitting With Smoothness
+ * []: Exploitation
+ *
+ * DATA Analysis
+ * [X]: Triat Average Error
+ * [X]: Trait Min Error
+ * [X]: Trait Solution Count
+ * [X]: Population Average Error
+ * [P]: Unique Genotypes
 */
 
 ///< Defnining name
@@ -57,16 +55,54 @@ DATA Analysis
 #include "config.h"
 #include "DiagnosticOrg.h"
 
-///< Custom naming
-using ids_t = emp::vector<size_t>;
-using fit_agg_t = std::function<double(DiaOrg &)>;
-using fit_lex_t = std::function<double(DiaOrg &, size_t)>;
-using eva_fun = std::function<void(DiaOrg &)> ;
-using sel_fun = std::function<ids_t()>;
-using tar_t = emp::vector<double>;
-using cls_t = emp::vector<ids_t>;
+template <typename PHEN_TYPE>
+struct pheno_info { /// Track information related to the mutational landscape
+  /// Maps a string representing a type of mutation to a count representing
+  /// the number of that type of mutation that occured to bring about this taxon.
+  using phen_t = PHEN_TYPE;
+  using has_phen_t = std::true_type;
+  using has_mutations_t = std::false_type;
+  using has_fitness_t = std::true_type;
+  // using has_phenotype_t = true;
+
+  emp::DataNode<double, emp::data::Current, emp::data::Range> fitness; /// This taxon's fitness (for assessing deleterious mutational steps)
+  PHEN_TYPE phenotype; /// This taxon's phenotype (for assessing phenotypic change)
+
+  const PHEN_TYPE & GetPhenotype() const {
+    return phenotype;
+  }
+
+  const double GetFitness() const {
+    return fitness.GetMean();
+  }
+
+  void RecordFitness(double fit) {
+    fitness.Add(fit);
+  }
+
+  void RecordPhenotype(PHEN_TYPE phen) {
+    phenotype = phen;
+  }
+
+};
 
 class DiaWorld : public emp::World<DiaOrg> {
+
+  ///< Custom naming
+  public:
+
+    using ids_t = emp::vector<size_t>;
+    using fit_agg_t = std::function<double(DiaOrg &)>;
+    using fit_lex_t = std::function<double(DiaOrg &, size_t)>;
+    using eva_fun = std::function<void(DiaOrg &)> ;
+    using sel_fun = std::function<ids_t()>;
+    using tar_t = emp::vector<double>;
+    using cls_t = emp::vector<ids_t>;
+
+    ///< Data tracking with MONSTER Branch
+    // using phenotype_t = DiaOrg;
+    using systematics_t = emp::Systematics<DiaOrg, DiaOrg::genome_t, pheno_info<typename DiaOrg::phenot_t>>;
+    using taxon_t = typename systematics_t::taxon_t;
 
   private:
 
@@ -98,15 +134,16 @@ class DiaWorld : public emp::World<DiaOrg> {
     std::fstream trt_avg_err;         ///< Track the average error for a trait per update
     std::fstream trt_min_err;         ///< Track the minimum error for a trait  per update
     std::fstream pop_avg_err;         ///< Track the average error for the population each generation
+    emp::Ptr<systematics_t> sys_ptr; ///< Short cut to correctly-typed systematics manager. Base class will be responsible for memory management.
+
 
   public:
+
     DiaWorld(DiaWorldConfig & _config) : config(_config) {      ///< Constructor
       // Initialize the vector to poplulation pop_ids
       for(size_t i = 0; i < config.POP_SIZE(); i++) {pop_ids.push_back(i);}
       // Initialze the  vector t0 traits trt_ids
       for(size_t i = 0; i < config.K_TRAITS(); i++) {trt_ids.push_back(i);}
-      // Set requested selection and fitness functions
-      InitialSetup();
       // Initialize pointer
       random_ptr = emp::NewPtr<emp::Random>(config.SEED());
       // If not multiobjective, then we can set all traits to the same value
@@ -117,6 +154,27 @@ class DiaWorld : public emp::World<DiaOrg> {
       else {
 
       }
+
+      // Initialize systematic tracking
+      sys_ptr = emp::NewPtr<systematics_t>([](const DiaOrg & o) { return o.GetGenome(); });
+
+      sys_ptr->AddSnapshotFun([](const taxon_t & taxon) {
+        return emp::to_string(taxon.GetData().GetFitness());
+      }, "fitness", "Taxon fitness");
+
+      sys_ptr->AddSnapshotFun([](const taxon_t & taxon) {
+        return emp::ToString(taxon.GetData().GetPhenotype());
+      }, "phenotype", "Taxon Phenotype");
+
+      sys_ptr->AddSnapshotFun([](const taxon_t & taxon) {
+        return emp::ToString(taxon.GetInfo());
+      }, "genotype", "Taxon Genotype");
+
+      AddSystematics(sys_ptr);
+      SetupSystematicsFile(0, config.OUTPUT_DIR() + "systematics.csv").SetTimingRepeat(config.PRINT_INTERVAL());
+
+      // Set requested selection and fitness functions
+      InitialSetup();
     }
 
     ~DiaWorld() {
@@ -134,6 +192,7 @@ class DiaWorld : public emp::World<DiaOrg> {
     void SetOnOffspringReady();     ///< Set up the OnOffspringReady function
     void SetEvaluationFun();        ///< Set up the Evaluation function
     void InitializeWorld();         ///< Set initial population of orgs
+    void SetSystematics();          ///< Set systematic manager
 
 
     /* Functions for Tournament Selection set up */
@@ -188,7 +247,7 @@ class DiaWorld : public emp::World<DiaOrg> {
     void Evaluate();                ///< Evaluate all orgs on individual test cases!
     ids_t Selection();              ///< Call when its time to select parents
     size_t Mutate();                ///< Call when we need to mutate an organism
-    void Births(ids_t parents);                  ///< Call when its time to produce offspring
+    void Births(const ids_t & parents);                  ///< Call when its time to produce offspring
 
 
     /* Functions for gathering data */
@@ -198,7 +257,12 @@ class DiaWorld : public emp::World<DiaOrg> {
     void CountTraitSolution(size_t up);          ///< Given some threshold, how many solutions do we have?
     void AverageTraitError(size_t up);           ///< Average error on a trait, per population, per update
     void MinimumTraitError(size_t up);           ///< Get best error per trait
-    void AveragePopError(size_t up);             ///< Average error for a population per update
+    void PopulationData(size_t up);              ///< Call functions that return single value pop data
+    double AveragePopError();                    ///< Average error for a population per update
+    size_t UniqueGenomes();                      ///< Number of Unique genomes per update
+
+
+    void SnapshotPhylogony();
 
     /* DEBUGGINGGGGGGGGGG */
 
@@ -227,6 +291,10 @@ void DiaWorld::SetOnUpdate() {
     Evaluate();
     // Gather relavant data!
     GatherData(GetUpdate());
+    // Take the snapshot
+    if(GetUpdate() % config.SNAP_INTERVAL() == 0 || GetUpdate() == config.MAX_GENS()-1) {
+      SnapshotPhylogony();
+    }
     // Select parents for next gen
     auto parents = Selection();
     // Give birth to the next gen & mutate
@@ -964,16 +1032,21 @@ void DiaWorld::Evaluate() {
 
     // Sum up all the error for the orgs
     org.TotalSumScores();
+
+    // systematic stuff
+    emp::Ptr<taxon_t> taxon = sys_ptr->GetTaxonAt(pos);
+    taxon->GetData().RecordFitness(org.GetTotalScore());
+    taxon->GetData().RecordPhenotype(org.GetPheno());
   }
 }
 
 ///< Call when its time to select parents
-ids_t DiaWorld::Selection() {
+DiaWorld::ids_t DiaWorld::Selection() {
   return select();
 }
 
 ///< Call when its time to produce offsprings from parents
-void DiaWorld::Births(ids_t parents) {
+void DiaWorld::Births(const ids_t & parents) {
   // Go through the parent ids and give birth!
   for(auto & id : parents) {
     DoBirth(GetGenomeAt(id), id);
@@ -1012,7 +1085,7 @@ void DiaWorld::SetCSVHeaders() {
   trt_avg_err.open(config.OUTPUT_DIR() + "trt_avg_err.csv", std::ios::out | std::ios::app);
   trt_min_err.open(config.OUTPUT_DIR() + "trt_min_err.csv", std::ios::out | std::ios::app);
   trt_sol_cnt.open(config.OUTPUT_DIR() + "trt_sol_cnt.csv", std::ios::out | std::ios::app);
-  pop_avg_err.open(config.OUTPUT_DIR() + "pop_avg_err.csv", std::ios::out | std::ios::app);
+  pop_avg_err.open(config.OUTPUT_DIR() + "pop_stats.csv", std::ios::out | std::ios::app);
 
   // Create header
   std::string head = "Update,";
@@ -1024,7 +1097,7 @@ void DiaWorld::SetCSVHeaders() {
   trt_avg_err << head << std::endl;
   trt_min_err << head << std::endl;
   trt_sol_cnt << head << std::endl;
-  pop_avg_err << "Gen,Error" << std::endl;
+  pop_avg_err << "Gen,Avg_Error,Unique_Genome" << std::endl;
 }
 
 ///< Will call all other functions to gather data
@@ -1032,7 +1105,7 @@ void DiaWorld::GatherData(size_t up) {
   AverageTraitError(up);
   MinimumTraitError(up);
   CountTraitSolution(up);
-  AveragePopError(up);
+  PopulationData(up);
 }
 
 ///< Given some threshold, how many solutions do we have?
@@ -1123,8 +1196,49 @@ void DiaWorld::MinimumTraitError(size_t up) {
   trt_min_err << update << std::endl;
 }
 
+///< Call functions that return single value pop data
+void DiaWorld::PopulationData(size_t up) {
+  pop_avg_err << up << "," << AveragePopError() << "," << UniqueGenomes()  << std::endl;
+}
+
+///< Number of Unique genomes per update
+size_t DiaWorld::UniqueGenomes() {
+  // This will hold our unique genomes
+  std::vector<tar_t> unique_g;
+
+  // Loop through the pop and get genome
+  for(size_t i = 0; i < pop.size(); i++) {
+    DiaOrg & org = *pop[i];
+    tar_t g(org.GetGenome());
+    size_t cnt = 0;
+
+    // If this is our first genome
+    if(unique_g.size() == 0) {
+      unique_g.push_back(g);
+      continue;
+    }
+
+    // Loop through our existing unique genomes
+    for(auto & v : unique_g) {
+      // Loop through the unique genome and see if there is a match
+      for(size_t j = 0; j < v.size(); j++) {
+        // If there is a mismatch at certain positions
+        if(v[j] != g[j]) {
+          cnt++;
+          break;
+        }
+      }
+    }
+    if(cnt == unique_g.size()) {
+      unique_g.push_back(g);
+    }
+  }
+
+  return unique_g.size();
+}
+
 ///< Average error for a population per update
-void DiaWorld::AveragePopError(size_t up) {
+double DiaWorld::AveragePopError() {
   // Hold population error
   double error = 0.0;
 
@@ -1134,11 +1248,14 @@ void DiaWorld::AveragePopError(size_t up) {
     error += org.GetTotalScore();
   }
 
-  error /= (double) pop.size();
-
-  pop_avg_err << std::to_string(up) + "," + std::to_string(error) << std::endl;
+  return (error / (double) pop.size());
 }
 
+
+void DiaWorld::SnapshotPhylogony() {
+  sys_ptr->Snapshot(config.OUTPUT_DIR() + "phylo_" + emp::to_string(GetUpdate()) + ".csv");
+
+}
 
 /* DEBUGGINGGGGGGGGGG */
 

@@ -11,15 +11,19 @@
 #include <cmath>
 #include <limits.h>
 
-///< Custom Type Names
-using genome_t = emp::vector<double>;
-
 class DiaOrg {
 
+  ///< Custom Type Names
+  public:
+
+    using genome_t = emp::vector<double>;
+    using phenot_t = emp::vector<double>;
+
+
   private:
+
     genome_t genome;          ///< Contains the K internal values
-    genome_t score;           ///< Contains the scores per K internal values
-    genome_t strut_exploit;   ///< Contains the scores for structured exploit
+    phenot_t score;           ///< Contains the scores per K internal values
     double best_score;        ///< Contains the best score
     size_t best_index;        ///< Contains the index for the best score
     size_t K;                 ///< How many internal values do you have
@@ -42,8 +46,10 @@ class DiaOrg {
 
 
     /* Getters */
-    const genome_t & GetConstGenome() const {return genome;}
+    const genome_t & GetGenome() const {return genome;}
     genome_t & GetGenome() { return genome; }
+    const phenot_t & GetPheno() const {return score;}
+    phenot_t & GetPheno() { return score; }
     double GetTotalScore() const { emp_assert(total != -1.0); return total; }
     double GetScore(const size_t & i) const {emp_assert(i >= 0, i); emp_assert(i < score.size(), i); emp_assert(score[i] != -1.0, score[i]); return score[i];}
     double GetTrait(const size_t & i) const {emp_assert(i >= 0, i); emp_assert(i < genome.size(), i); return genome[i];}
