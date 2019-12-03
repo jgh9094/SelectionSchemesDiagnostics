@@ -54,9 +54,7 @@ def main():
             header.append("seed_"+str(s + (i * 100)))
 
         result = pd.concat(frames, axis=1, join='inner')
-        result.columns = header
-        result.set_index('gens')
-        result.to_csv("lex_avg_err_pop_" + str(POP_SIZE[i]) + ".csv", sep=',')
+        result.to_csv("lex_avg_err_pop_" + str(POP_SIZE[i]) + ".csv", sep=',', header=header)
         print(result)
 
 
