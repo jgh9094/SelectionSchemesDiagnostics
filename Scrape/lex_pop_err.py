@@ -51,7 +51,5 @@ def main():
             dir = data_directory + DIRECTORY + str(POP_SIZE[i]) + "__TRT_100__SEED_"
 
 
-    print("count=",count)
-
 if __name__ == "__main__":
     main()
