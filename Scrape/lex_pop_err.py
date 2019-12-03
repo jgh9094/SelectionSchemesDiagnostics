@@ -34,8 +34,6 @@ def main():
     write_directory = write_directory.strip()
     snapshot = args.snapshot
 
-    count = 0
-
     # Iterate through each pop size
     for i in range(len(POP_SIZE)):
         dir = data_directory + DIRECTORY + str(POP_SIZE[i]) + "__TRT_100__SEED_"
@@ -46,7 +44,7 @@ def main():
             data = pd.read_csv(dir)
 
             # Grab every nth
-            data = data.iloc[::snapshot, :]
+            data = data.iloc[::snapshot, 2]
             print(data)
 
 
