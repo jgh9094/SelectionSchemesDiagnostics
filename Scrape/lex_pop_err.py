@@ -38,7 +38,7 @@ def main():
     for i in range(len(POP_SIZE)):
         dir = data_directory + DIRECTORY + str(POP_SIZE[i]) + "__TRT_100__SEED_"
         frames = []
-        header = ["generation"]
+        header = []
         # Iterate through all the seed replicates
         for s in range(1,REPLICATES+1):
             # Set directory and load all the data
@@ -55,6 +55,7 @@ def main():
 
         result = pd.concat(frames, axis=1, join='inner')
         result.columns = header
+        result.set_index('gens')
         result.to_csv("lex_avg_err_pop_" + str(POP_SIZE[i]) + ".csv", sep=',')
         print(result)
 
