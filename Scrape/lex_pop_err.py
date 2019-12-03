@@ -37,6 +37,7 @@ def main():
     # Iterate through each pop size
     for i in range(len(POP_SIZE)):
         dir = data_directory + DIRECTORY + str(POP_SIZE[i]) + "__TRT_100__SEED_"
+        frames = []
         # Iterate through all the seed replicates
         for s in range(1,REPLICATES+1):
             # Set directory and load all the data
@@ -45,12 +46,11 @@ def main():
 
             # Grab every nth
             data = data.iloc[::snapshot, COL]
-            print(dir)
-            print(data)
-            print()
-
-
+            frames.append(data)
             dir = data_directory + DIRECTORY + str(POP_SIZE[i]) + "__TRT_100__SEED_"
+
+        result = pd.concat(frames)
+        print(result)
 
 
 if __name__ == "__main__":
