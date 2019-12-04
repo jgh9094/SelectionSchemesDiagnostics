@@ -123,6 +123,6 @@ RUN_DIR=${DATA_DIR}/${NAME}/
 # make a run directory
 mkdir -p ${RUN_DIR}
 
-echo "../../Experiments/diagnostics -SEED ${SEED} -POP_SIZE ${POP_SIZE} -DIAGNOSTIC ${DIAGNOSTIC__1} -OUTPUT_DIR ${RUN_DIR} -MAX_GENS ${GENERATIONS} > run.log" > ./cmd.txt
+echo "../../Experiments/diagnostics -SEED ${SEED} -POP_SIZE ${POP_SIZE} -DIAGNOSTIC ${DIAGNOSTIC__1} -OUTPUT_DIR ${RUN_DIR} -SELECTION ${LEXICASE} -MAX_GENS ${GENERATIONS} > run.log" > ./cmd.txt
 
 ../../Experiments/diagnostics -SEED ${SEED} -POP_SIZE ${POP_SIZE} -DIAGNOSTIC ${EXPLOITATION} -OUTPUT_DIR ${RUN_DIR} -SELECTION ${LEXICASE} -MAX_GENS ${GENERATIONS}

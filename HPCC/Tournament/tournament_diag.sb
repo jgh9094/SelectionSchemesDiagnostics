@@ -127,6 +127,6 @@ RUN_DIR=${DATA_DIR}/${NAME}/
 # make a run directory
 mkdir -p ${RUN_DIR}
 
-echo "../../Experiments/diagnostics -SEED ${SEED} -POP_SIZE ${POP_SIZE} -DIAGNOSTIC ${DIAGNOSTIC__1} -OUTPUT_DIR ${RUN_DIR} -TOUR_SIZE ${TOURN} -MAX_GENS ${GENERATIONS} > run.log" > ./cmd-torn.txt
+echo "../../Experiments/diagnostics -SEED ${SEED} -POP_SIZE ${POP_SIZE} -DIAGNOSTIC ${EXPLOITATION} -OUTPUT_DIR ${RUN_DIR} -SELECTION ${TOURNAMENT} -TOUR_SIZE ${TOURN} -MAX_GENS ${GENERATIONS} > run.log" > ./cmd-torn.txt
 
 ../../Experiments/diagnostics -SEED ${SEED} -POP_SIZE ${POP_SIZE} -DIAGNOSTIC ${EXPLOITATION} -OUTPUT_DIR ${RUN_DIR} -SELECTION ${TOURNAMENT} -TOUR_SIZE ${TOURN} -MAX_GENS ${GENERATIONS}
