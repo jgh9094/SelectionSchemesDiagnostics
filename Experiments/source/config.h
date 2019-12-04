@@ -31,7 +31,7 @@ EMP_BUILD_CONFIG( DiaWorldConfig,
 
   GROUP(MUTATIONS, "Various mutation rates for organisms"),
   VALUE(MUTATE,           bool,       true,         "Do we want mutations in this experiment."),
-  VALUE(MUTATE_VAL,       double,     0.001,        "Probability of instructions being mutated"),
+  VALUE(MUTATE_VAL,       double,     0.009,        "Probability of instructions being mutated"),
   VALUE(MEAN,             double,     0.0,          "Mean of Gaussian Distribution for mutations"),
   VALUE(STD,              double,     1.0,          "Standard Deviation of Gaussian Distribution for mutations"),
 
