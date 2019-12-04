@@ -16,6 +16,12 @@ DATA_DIR=/mnt/scratch/herna383/SelectionData/Lexicase
 
 
 ##################################
+# Setup relevant directories
+##################################
+GENERATIONS=50001
+
+
+##################################
 # Setup random seed info
 ##################################
 SEL_MODE=LEXICASE
@@ -117,6 +123,6 @@ RUN_DIR=${DATA_DIR}/${NAME}/
 # make a run directory
 mkdir -p ${RUN_DIR}
 
-echo "../../Experiments/diagnostics -SEED ${SEED} -POP_SIZE ${POP_SIZE} -DIAGNOSTIC ${DIAGNOSTIC__1} -OUTPUT_DIR ${RUN_DIR} > run.log" > ./cmd.txt
+echo "../../Experiments/diagnostics -SEED ${SEED} -POP_SIZE ${POP_SIZE} -DIAGNOSTIC ${DIAGNOSTIC__1} -OUTPUT_DIR ${RUN_DIR} -MAX_GENS ${GENERATIONS} > run.log" > ./cmd.txt
 
-../../Experiments/diagnostics -SEED ${SEED} -POP_SIZE ${POP_SIZE} -DIAGNOSTIC ${EXPLOITATION} -OUTPUT_DIR ${RUN_DIR} -SELECTION ${LEXICASE}
+../../Experiments/diagnostics -SEED ${SEED} -POP_SIZE ${POP_SIZE} -DIAGNOSTIC ${EXPLOITATION} -OUTPUT_DIR ${RUN_DIR} -SELECTION ${LEXICASE} -MAX_GENS ${GENERATIONS}

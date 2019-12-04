@@ -16,6 +16,11 @@ DATA_DIR=/mnt/scratch/herna383/SelectionData/Tournament
 
 
 ##################################
+# Setup relevant directories
+##################################
+GENERATIONS=50001
+
+##################################
 # Setup random seed info
 ##################################
 SEL_MODE=TOURNAMENT
@@ -122,6 +127,6 @@ RUN_DIR=${DATA_DIR}/${NAME}/
 # make a run directory
 mkdir -p ${RUN_DIR}
 
-echo "../../Experiments/diagnostics -SEED ${SEED} -POP_SIZE ${POP_SIZE} -DIAGNOSTIC ${DIAGNOSTIC__1} -OUTPUT_DIR ${RUN_DIR} -TOUR_SIZE ${TOURN} > run.log" > ./cmd-torn.txt
+echo "../../Experiments/diagnostics -SEED ${SEED} -POP_SIZE ${POP_SIZE} -DIAGNOSTIC ${DIAGNOSTIC__1} -OUTPUT_DIR ${RUN_DIR} -TOUR_SIZE ${TOURN} -MAX_GENS ${GENERATIONS} > run.log" > ./cmd-torn.txt
 
-../../Experiments/diagnostics -SEED ${SEED} -POP_SIZE ${POP_SIZE} -DIAGNOSTIC ${EXPLOITATION} -OUTPUT_DIR ${RUN_DIR} -SELECTION ${TOURNAMENT} -TOUR_SIZE ${TOURN}
+../../Experiments/diagnostics -SEED ${SEED} -POP_SIZE ${POP_SIZE} -DIAGNOSTIC ${EXPLOITATION} -OUTPUT_DIR ${RUN_DIR} -SELECTION ${TOURNAMENT} -TOUR_SIZE ${TOURN} -MAX_GENS ${GENERATIONS}
