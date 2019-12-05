@@ -10,6 +10,7 @@
 import datetime
 import argparse
 import os
+import pandas as pd
 
 # VARIABLES EVERYONE NEEDS TO KNOW
 GENRATIONS=50000
@@ -30,6 +31,8 @@ def lex(d_dir):
   print('-----------------------------')
   print('Processing Lexicase Runs-' + str(NOW))
 
+  lost = []
+
   for i in range(len(LEX_POP_SIZE)):
     for r in range(1,REPLICATES+1):
       # Create the directory
@@ -38,10 +41,22 @@ def lex(d_dir):
 
       # Check to see if directory exists
       if(os.path.isdir(dir)):
-        print(dir + '===FOUND')
+        print(dir + '===FOUND===')
+
+        f = pd.read_csv(dir+POP_FILE)
+        last = pd.tail(1)
+        print('last=', last)
+
+
+
+
 
       else:
         print(dir + '===NOTEXISTING')
+        lost.append(seed)
+
+
+  print('SEED INCOMPLETE/UNCREATED=', lost)
 
 
 
