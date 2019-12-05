@@ -11,6 +11,7 @@ import datetime
 import argparse
 import os
 import pandas as pd
+import sys
 
 # VARIABLES EVERYONE NEEDS TO KNOW
 GENRATIONS=50000
@@ -44,9 +45,9 @@ def lex(d_dir):
         print(dir + '===FOUND===')
 
         f = pd.read_csv(dir+POP_FILE)
-        last = int(f.tail(1).values.tolist()[0])
+        last = f.tail(1).values.tolist()
         print('last=', last)
-
+        sys.exit([-1])
 
 
 
