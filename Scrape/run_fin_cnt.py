@@ -110,6 +110,47 @@ DSL_OFFSET = 1500
 DSL_DIR_1 = "SEL_DOWN__DIA_Exploitation__POP_1000__TRT_100__PROP_"
 DSL_DIR_2 = "__SEED_"
 
+
+######################## COHORT ########################
+COH_PROP = [.05, .1, .25, .5, 1.0]
+COH_OFFSET = 1000
+COH_DIR_1 = "SEL_COHORT__DIA_Exploitation__POP_1000__TRT_100__PROP_"
+COH_DIR_2 = "__SEED_"
+
+def coh(d_dir):
+  print('-----------------------------'*4)
+  print('Processing Cohort Runs-' + str(NOW))
+
+  lost = []
+
+  for i in range(len(COH_PROP)):
+    for r in range(1,REPLICATES+1):
+      # Create the directory
+      seed = (r + (i * 100)) + COH_OFFSET + REPLICATION_OFFSET
+      dir = d_dir + COH_DIR_1 + str(COH_PROP[i]) + COH_DIR_2 + str(seed)
+
+      # Check to see if directory exists
+      if(os.path.isdir(dir)):
+        # Get the last row and check if we finished the run
+        f = pd.read_csv(dir+POP_FILE)
+        last = int(f.tail(1).values.tolist()[0][0])
+
+        if(last != GENRATIONS):
+          lost.append(seed)
+          print(dir + '===FOUND===NOGO')
+
+        else:
+          print(dir + '===FOUND===FINISHED')
+
+      else:
+        print(dir + '===NOGO')
+        lost.append(seed)
+
+
+  print('SEED INCOMPLETE/UNCREATED=', lost)
+  print('-----------------------------'*4)
+  print()
+
 def dsl(d_dir):
   print('-----------------------------'*4)
   print('Processing Down Sampled Runs-' + str(NOW))
@@ -164,6 +205,9 @@ def main():
     tour(data_directory)
 
   elif(sel == 2):
+    coh(data_directory)
+
+  elif(sel == 3):
     dsl(data_directory)
 
 
