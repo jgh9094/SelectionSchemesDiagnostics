@@ -49,7 +49,7 @@ def lex(d_dir):
         f = pd.read_csv(dir+POP_FILE)
         last = int(f.tail(1).values.tolist()[0][0])
 
-        if(last != GENRATIONS):
+        if(last  < GENRATIONS):
           lost.append(seed)
           print(dir + '===FOUND===NOGO')
 
@@ -91,7 +91,7 @@ def tour(d_dir):
         f = pd.read_csv(dir+POP_FILE)
         last = int(f.tail(1).values.tolist()[0][0])
 
-        if(last != GENRATIONS):
+        if(last  < GENRATIONS):
           lost.append(seed)
           print(dir + '===FOUND===NOGO')
 
@@ -132,7 +132,7 @@ def dsl(d_dir):
         f = pd.read_csv(dir+POP_FILE)
         last = int(f.tail(1).values.tolist()[0][0])
 
-        if(last != GENRATIONS):
+        if(last  < GENRATIONS):
           lost.append(seed)
           print(dir + '===FOUND===NOGO')
 
@@ -173,7 +173,7 @@ def coh(d_dir):
         f = pd.read_csv(dir+POP_FILE)
         last = int(f.tail(1).values.tolist()[0][0])
 
-        if(last != GENRATIONS):
+        if(last  < GENRATIONS):
           lost.append(seed)
           print(dir + '===FOUND===NOGO')
 
