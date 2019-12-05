@@ -45,7 +45,7 @@ def lex(d_dir):
 
         f = pd.read_csv(dir+POP_FILE)
         last = f.tail(1).values.tolist()
-        print('last=', type(last))
+        print('last=', last)
 
 
 
