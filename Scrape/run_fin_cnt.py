@@ -17,7 +17,6 @@ import os
 import pandas as pd
 
 # VARIABLES EVERYONE NEEDS TO KNOW
-GENRATIONS=50000
 REPLICATION_OFFSET=0
 DATA_DIR='/mnt/scratch/herna383/SelectionData/'
 POP_FILE = "/pop_stats.csv"
@@ -31,7 +30,7 @@ LEX_OFFSET = 0
 LEX_DIR_1 = "SEL_LEXICASE__DIA_Exploitation__POP_"
 LEX_DIR_2 = "__TRT_100__SEED_"
 
-def lex(d_dir):
+def lex(d_dir, GENRATIONS):
   print('-----------------------------'*4)
   print('Processing Lexicase Runs-' + str(NOW))
 
@@ -73,7 +72,7 @@ TRN_OFFSET = 500
 TRN_DIR_1 = "SEL_TOURNAMENT__DIA_Exploitation__POP___TRT_100__TOURN_"
 TRN_DIR_2 = "__SEED_"
 
-def tour(d_dir):
+def tour(d_dir, GENRATIONS):
   print('-----------------------------'*4)
   print('Processing Tournament Runs-' + str(NOW))
 
@@ -114,7 +113,7 @@ DSL_OFFSET = 1500
 DSL_DIR_1 = "SEL_DOWN__DIA_Exploitation__POP_1000__TRT_100__PROP_"
 DSL_DIR_2 = "__SEED_"
 
-def dsl(d_dir):
+def dsl(d_dir, GENRATIONS):
   print('-----------------------------'*4)
   print('Processing Down Sampled Runs-' + str(NOW))
 
@@ -155,7 +154,7 @@ COH_OFFSET = 1000
 COH_DIR_1 = "SEL_COHORT__DIA_Exploitation__POP_1000__TRT_100__PROP_"
 COH_DIR_2 = "__SEED_"
 
-def coh(d_dir):
+def coh(d_dir, GENRATIONS):
   print('-----------------------------'*4)
   print('Processing Cohort Runs-' + str(NOW))
 
@@ -201,23 +200,23 @@ def main():
   args = parser.parse_args()
   data_directory = args.data_directory
   sel = args.selection
-  GENRATIONS = args.generation
+  gen = args.generation
 
   print('Starting run_fin_cnt.py')
-  print('GENRATIONS=' + str(GENRATIONS))
+  print('GENRATIONS=' + str(gen))
 
   # What are we checking
   if(sel == 0):
-    lex(data_directory)
+    lex(data_directory, gen)
 
   elif(sel == 1):
-    tour(data_directory)
+    tour(data_directory, gen)
 
   elif(sel == 2):
-    coh(data_directory)
+    coh(data_directory, gen)
 
   elif(sel == 3):
-    dsl(data_directory)
+    dsl(data_directory, gen)
 
 
 if __name__ == "__main__":
