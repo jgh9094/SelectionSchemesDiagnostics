@@ -51,7 +51,7 @@ def lex(d_dir):
 
         if(last  < GENRATIONS):
           lost.append(seed)
-          print(dir + '===FOUND===NOGO')
+          print(dir + '===FOUND===NOGO===' + str(last))
 
         else:
           print(dir + '===FOUND===FINISHED')
