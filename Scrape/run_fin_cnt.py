@@ -42,18 +42,19 @@ def lex(d_dir):
 
       # Check to see if directory exists
       if(os.path.isdir(dir)):
-        print(dir + '===FOUND===')
-
+        # Get the last row and check if we finished the run
         f = pd.read_csv(dir+POP_FILE)
         last = int(f.tail(1).values.tolist()[0][0])
-        print('last=', last)
-        sys.exit([-1])
 
+        if(last != GENRATIONS):
+          lost.append(seed)
+          print(dir + '===FOUND===NOGO')
 
-
+        else:
+          print(dir + '===FOUND===FINISHED')
 
       else:
-        print(dir + '===NOTEXISTING')
+        print(dir + '===NOGO')
         lost.append(seed)
 
 
