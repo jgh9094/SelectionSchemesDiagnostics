@@ -1,6 +1,10 @@
 # Will go thourgh each directory and see if the folder exists and count the
 # number of finsihed runs.
 #
+# Input:
+#   arg1 -> Directory where the data is located
+#   arg2 -> What selection scheme are we checking
+#   arg3 -> What generation are we checking
 #
 # Output : print out the seeds that are not finished running for a treatment replicate
 #
@@ -110,6 +114,40 @@ DSL_OFFSET = 1500
 DSL_DIR_1 = "SEL_DOWN__DIA_Exploitation__POP_1000__TRT_100__PROP_"
 DSL_DIR_2 = "__SEED_"
 
+def dsl(d_dir):
+  print('-----------------------------'*4)
+  print('Processing Down Sampled Runs-' + str(NOW))
+
+  lost = []
+
+  for i in range(len(DSL_PROP)):
+    for r in range(1,REPLICATES+1):
+      # Create the directory
+      seed = (r + (i * 100)) + DSL_OFFSET + REPLICATION_OFFSET
+      dir = d_dir + DSL_DIR_1 + str(DSL_PROP[i]) + DSL_DIR_2 + str(seed)
+
+      # Check to see if directory exists
+      if(os.path.isdir(dir)):
+        # Get the last row and check if we finished the run
+        f = pd.read_csv(dir+POP_FILE)
+        last = int(f.tail(1).values.tolist()[0][0])
+
+        if(last != GENRATIONS):
+          lost.append(seed)
+          print(dir + '===FOUND===NOGO')
+
+        else:
+          print(dir + '===FOUND===FINISHED')
+
+      else:
+        print(dir + '===NOGO')
+        lost.append(seed)
+
+
+  print('SEED INCOMPLETE/UNCREATED=', lost)
+  print('-----------------------------'*4)
+  print()
+
 
 ######################## COHORT ########################
 COH_PROP = [.05, .1, .25, .5, 1.0]
@@ -151,51 +189,22 @@ def coh(d_dir):
   print('-----------------------------'*4)
   print()
 
-def dsl(d_dir):
-  print('-----------------------------'*4)
-  print('Processing Down Sampled Runs-' + str(NOW))
-
-  lost = []
-
-  for i in range(len(DSL_PROP)):
-    for r in range(1,REPLICATES+1):
-      # Create the directory
-      seed = (r + (i * 100)) + DSL_OFFSET + REPLICATION_OFFSET
-      dir = d_dir + DSL_DIR_1 + str(DSL_PROP[i]) + DSL_DIR_2 + str(seed)
-
-      # Check to see if directory exists
-      if(os.path.isdir(dir)):
-        # Get the last row and check if we finished the run
-        f = pd.read_csv(dir+POP_FILE)
-        last = int(f.tail(1).values.tolist()[0][0])
-
-        if(last != GENRATIONS):
-          lost.append(seed)
-          print(dir + '===FOUND===NOGO')
-
-        else:
-          print(dir + '===FOUND===FINISHED')
-
-      else:
-        print(dir + '===NOGO')
-        lost.append(seed)
-
-
-  print('SEED INCOMPLETE/UNCREATED=', lost)
-  print('-----------------------------'*4)
-  print()
-
 def main():
   # Generate the arguments
   parser = argparse.ArgumentParser(description="Data aggregation script.")
   parser.add_argument("data_directory", type=str, help="Target experiment directory.")
   parser.add_argument("selection", type=int, help="What selection do we want to check")
+  parser.add_argument("generation", type=int, help="What selection do we want to check")
+
 
   # Get the arguments
   args = parser.parse_args()
   data_directory = args.data_directory
   sel = args.selection
+  GENRATIONS = args.generation
+
   print('Starting run_fin_cnt.py')
+  print('GENRATIONS=' + str(GENRATIONS))
 
   # What are we checking
   if(sel == 0):
