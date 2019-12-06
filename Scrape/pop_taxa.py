@@ -56,6 +56,7 @@ def lex(d_dir, w_dir, snap):
 
                 # Grab every nth row
                 data = data.iloc[::snap, 0:COL]
+                print(data)
                 frames.append(data)
 
                 # Add replicate number to the header
