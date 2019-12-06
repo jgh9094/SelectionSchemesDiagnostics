@@ -21,7 +21,7 @@ REPLICATION_OFFSET=0
 DATA_DIR='/mnt/scratch/herna383/SelectionData/'
 POP_FILE = "/systematics.csv"
 REPLICATES = 100
-COL = 1
+COL = 2
 NOW = datetime.datetime.now()
 
 
