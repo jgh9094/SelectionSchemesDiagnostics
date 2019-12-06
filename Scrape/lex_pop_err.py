@@ -67,7 +67,7 @@ def lex(d_dir, w_dir, snap):
                 # Add replicate number to the header
                 header.append('r'+ str(r))
 
-        result = pd.concat(frames, axis=1, join='inner',ignore_index=True)
+        result = pd.concat(frames, axis=0, join='inner',ignore_index=True)
         print('index=',result.index)
         print('shape=', result.shape)
         print(result)
