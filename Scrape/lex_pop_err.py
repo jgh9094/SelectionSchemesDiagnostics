@@ -53,7 +53,7 @@ def lex(d_dir, w_dir, snap):
         # Go through each replicate
         for r in range(1,REPLICATES+1):
             # Calculate Seed
-            seed = (r + (i * 100)) + LEX_OFFSET + REPLICATION_OFFSET
+            seed = r + (i * 100)) + LEX_OFFSET + REPLICATION_OFFSET
 
             print('dir=' + dir + str(seed) + POP_FILE)
             # Check if data directory exists
