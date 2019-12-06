@@ -108,7 +108,7 @@ def tour(d_dir, GENRATIONS):
 
 
 ######################## DOWN SAMPLED ########################
-DSL_PROP = ['.05', '.1,' '.25,' '.5,' '1.0']
+DSL_PROP = ['.05', '.1', '.25', '.5', '1.0']
 DSL_OFFSET = 1500
 DSL_DIR_1 = "SEL_DOWN__DIA_Exploitation__POP_1000__TRT_100__PROP_"
 DSL_DIR_2 = "__SEED_"
@@ -149,7 +149,7 @@ def dsl(d_dir, GENRATIONS):
 
 
 ######################## COHORT ########################
-COH_PROP = ['.05', '.1,' '.25,' '.5,' '1.0']
+COH_PROP = ['.05', '.1', '.25', '.5', '1.0']
 COH_OFFSET = 1000
 COH_DIR_1 = "SEL_COHORT__DIA_Exploitation__POP_1000__TRT_100__PROP_"
 COH_DIR_2 = "__SEED_"
