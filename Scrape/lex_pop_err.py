@@ -76,6 +76,50 @@ def lex(d_dir, w_dir, snap):
     print('-----------------------------'*4)
     print()
 
+######################## TOURNAMENT ########################
+TRN_SIZE = [7, 100, 500, 700, 1000]
+TRN_OFFSET = 500
+TRN_DIR_1 = "SEL_TOURNAMENT__DIA_Exploitation__POP___TRT_100__TOURN_"
+TRN_DIR_2 = "__SEED_"
+
+def tour(d_dir, w_dir, snap):
+    print('-----------------------------'*4)
+    print('Processing Tournament Runs-' + str(NOW))
+
+    # Go though all treatment configurations
+    for i in range(len(TRN_SIZE)):
+
+        # Set up the directory
+        dir = d_dir + TRN_DIR_1 + TRN_SIZE[i] + TRN_DIR_2
+        # Store all the frames and headers
+        frames = []
+        header = []
+
+        # Go through each replicate
+        for r in range(1,REPLICATES+1):
+            # Calculate Seed
+            seed = (r + (i * 100)) + TRN_OFFSET + REPLICATION_OFFSET
+
+            # Check if data directory exists
+            if(os.path.isdir(dir + str(seed))):
+                # Create data frame
+                data = pd.read_csv(dir + str(seed) + POP_FILE, index_col=False)
+
+                # Grab every nth row
+                data = data.iloc[::snap, COL]
+                frames.append(data)
+
+                # Add replicate number to the header
+                header.append('r'+ str(r))
+
+        result = pd.concat(frames, axis=1, join='inner',ignore_index=True)
+        result.insert(result.shape[1], 'pop', [TRN_SIZE[i]]* result.shape[0], True)
+        header.append('pop')
+        result.to_csv("trn_pop_avg_err_" + str(TRN_SIZE[i]) + ".csv", sep=',', header=header, index=True, index_label="Generation")
+
+    # We have finished!
+    print('-----------------------------'*4)
+    print()
 
 def main():
     # Generate the arguments
@@ -94,6 +138,9 @@ def main():
 
     if(sel == 0):
         lex(data_directory, write_directory, snapshot)
+
+    elif(sel == 1):
+        tour(data_directory, write_directory, snapshot)
 
 
 if __name__ == "__main__":
