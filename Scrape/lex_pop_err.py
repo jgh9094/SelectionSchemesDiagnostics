@@ -10,52 +10,115 @@
 #
 # python3
 
+######################## IMPORTS ########################
+import datetime
+import argparse
+import os
+import pandas as pd
+
 POP_SIZE = [10, 100, 500, 700, 1000]
 OFFSET = 0
 POP_FILE = "/pop_stats.csv"
-COL = 1
 REPLICATES = 100
 DIRECTORY = "SEL_LEXICASE__DIA_Exploitation__POP_"
 
-import argparse
-import pandas as pd
+######################## VARIABLES EVERYONE NEEDS TO KNOW ########################
+REPLICATION_OFFSET=0
+DATA_DIR='/mnt/scratch/herna383/SelectionData/'
+POP_FILE = "/pop_stats.csv"
+REPLICATES = 100
+COL = 1
+NOW = datetime.datetime.now()
+
+
+######################## LEXICASE ########################
+LEX_POP_SIZE = [10, 100, 500, 700, 1000]
+LEX_OFFSET = 0
+LEX_DIR_1 = "SEL_LEXICASE__DIA_Exploitation__POP_"
+LEX_DIR_2 = "__TRT_100__SEED_"
+
+def lex(d_dir, w_dir, snap):
+    print('-----------------------------'*4)
+    print('Processing Lexicase Runs-' + str(NOW))
+
+    # Go though all treatment configurations
+    for i in range(len(LEX_POP_SIZE)):
+        # Go through each replicate
+        for r in range(1,REPLICATES+1):
+            # Create the directory
+            seed = (r + (i * 100)) + LEX_OFFSET + REPLICATION_OFFSET
+            dir = d_dir + LEX_DIR_1 + str(LEX_POP_SIZE[i]) + LEX_DIR_2 + str(seed)
+
+            # Store all the frames and headers
+            frames = []
+            header = []
+
+            # Check if data directory exists
+            if(os.path.isdir(dir)):
+                # Create data frame
+                data = pd.read_csv(dir+POP_FILE)
+
+                # Grab every nth row
+                data = data.iloc[::snap, COL]
+                frames.append(data)
+
+                # Add replicate number to the header
+                header.append('r'+r)
+
+            # Reset the directgor so we can change the seed
+            dir = d_dir + LEX_DIR_1 + str(LEX_POP_SIZE[i]) + LEX_DIR_2
+
+        result = pd.concat(frames, axis=1, join='inner')
+        result.to_csv("lex_pop_avg_err" + str(LEX_POP_SIZE[i]) + ".csv", sep=',', header=header, index=True, index_label="Generation")
+        print(result)
+
+    # We have finished!
+    print('-----------------------------'*4)
+    print()
+
 
 def main():
     # Generate the arguments
     parser = argparse.ArgumentParser(description="Data aggregation script.")
     parser.add_argument("data_directory", type=str, help="Target experiment directory.")
     parser.add_argument("dump_directory", type=str, help="Target dump directory")
+    parser.add_argument("selection", type=int, help="Snapshot at each generation")
     parser.add_argument("snapshot", type=int, help="Snapshot at each generation")
 
     # Get the arguments
     args = parser.parse_args()
-    data_directory = args.data_directory
-    write_directory = args.dump_directory
-    write_directory = write_directory.strip()
-    snapshot = args.snapshot
+    data_directory = args.data_directory.strip()
+    write_directory = args.dump_directory.strip()
+    snapshot = args.snapshot.strip()
+    sel = args.selection
+
+    if(sel == 0):
+        lex(data_directory, write_directory, snapshot)
+
+
 
     # Iterate through each pop size
-    for i in range(len(POP_SIZE)):
-        dir = data_directory + DIRECTORY + str(POP_SIZE[i]) + "__TRT_100__SEED_"
-        frames = []
-        header = []
-        # Iterate through all the seed replicates
-        for s in range(1,REPLICATES+1):
-            # Set directory and load all the data
-            dir = dir + str(s + (i * 100)) + POP_FILE
-            data = pd.read_csv(dir)
+    # for i in range(len(POP_SIZE)):
+    #     dir = data_directory + DIRECTORY + str(POP_SIZE[i]) + "__TRT_100__SEED_"
+    #     frames = []
+    #     header = []
+    #     # Iterate through all the seed replicates
+    #     for s in range(1,REPLICATES+1):
+    #         # Set directory and load all the data
+    #         dir = dir + str(s + (i * 100)) + POP_FILE
+    #         data = pd.read_csv(dir)
 
-            # Grab every nth
-            data = data.iloc[::snapshot, COL]
-            frames.append(data)
-            dir = data_directory + DIRECTORY + str(POP_SIZE[i]) + "__TRT_100__SEED_"
+    #         # Grab every nth
+    #         data = data.iloc[::snapshot, COL]
+    #         frames.append(data)
+    #         dir = data_directory + DIRECTORY + str(POP_SIZE[i]) + "__TRT_100__SEED_"
 
-            # Add the seed to the header
-            header.append("seed_"+str(s + (i * 100)))
+    #         # Add the seed to the header
+    #         header.append("seed_"+str(s + (i * 100)))
 
-        result = pd.concat(frames, axis=1, join='inner')
-        result.to_csv("lex_avg_err_pop_" + str(POP_SIZE[i]) + ".csv", sep=',', header=header, index=True, index_label="Generation")
-        print(result)
+    #     result = pd.concat(frames, axis=1, join='inner')
+    #     result.to_csv("lex_avg_err_pop_" + str(POP_SIZE[i]) + ".csv", sep=',', header=header, index=True, index_label="Generation")
+    #     print(result)
 
 
 if __name__ == "__main__":
