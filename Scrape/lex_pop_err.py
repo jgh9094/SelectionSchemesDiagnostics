@@ -58,7 +58,7 @@ def lex(d_dir, w_dir, snap):
             # Check if data directory exists
             if(os.path.isdir(dir + str(seed))):
                 # Create data frame
-                data = pd.read_csv(dir + str(seed) + POP_FILE)
+                data = pd.read_csv(dir + str(seed) + POP_FILE, index_col=False)
 
                 # Grab every nth row
                 data = data.iloc[::snap, COL]
