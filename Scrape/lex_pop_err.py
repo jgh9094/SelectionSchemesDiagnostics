@@ -68,7 +68,7 @@ def lex(d_dir, w_dir, snap):
                 header.append('r'+ str(r))
 
         result = pd.concat(frames, axis=1, join='inner',ignore_index=True)
-        print('index=',result.index.values)
+        print('index=',len(result.index.values))
         print('shape=', result.shape)
         print(result)
         result.insert(result.shape[1], 'pop', [LEX_POP_SIZE[i] * result.shape[0]], True)
