@@ -53,13 +53,12 @@ def lex(d_dir, w_dir, snap):
         # Go through each replicate
         for r in range(1,REPLICATES+1):
             # Calculate Seed
-            seed = r + (i * 100)) + LEX_OFFSET + REPLICATION_OFFSET
+            seed = (r + (i * 100)) + LEX_OFFSET + REPLICATION_OFFSET
 
-            print('dir=' + dir + str(seed) + POP_FILE)
             # Check if data directory exists
             if(os.path.isdir(dir + str(seed) + POP_FILE)):
                 # Create data frame
-                data = pd.read_csv(dir+POP_FILE)
+                data = pd.read_csv(dir + str(seed) + POP_FILE)
 
                 # Grab every nth row
                 data = data.iloc[::snap, COL]
