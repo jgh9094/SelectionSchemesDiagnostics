@@ -68,7 +68,7 @@ def lex(d_dir, w_dir, snap):
                 header.append('r'+ str(r))
 
         result = pd.concat(frames, axis=1, join='inner')
-        result.set_index([i for i in range(result.shape[0])])
+        result.set_index("")
         print('index=',result.index)
         print('shape=', result.shape)
         print(result)
