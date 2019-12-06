@@ -65,7 +65,6 @@ def lex(d_dir, w_dir, snap):
         print(result)
         result.insert(result.shape[1], 'pop', [LEX_POP_SIZE[i]]* result.shape[0], True)
         x = [i*1000 for i in range(result.shape[0])]
-        print('len=', len(x))
         result.insert(result.shape[1], 'gen', x, True)
         header.append('pop')
         header.append('gen')
@@ -113,7 +112,10 @@ def tour(d_dir, w_dir, snap):
 
         result = pd.concat(frames, axis=1, join='inner',ignore_index=True)
         result.insert(result.shape[1], 'pop', [TRN_SIZE[i]]* result.shape[0], True)
+        x = [i*1000 for i in range(result.shape[0])]
+        result.insert(result.shape[1], 'gen', x, True)
         header.append('pop')
+        header.append('gen')
         result.to_csv("trn_pop_taxa_" + str(TRN_SIZE[i]) + ".csv", sep=',', header=header, index=True, index_label="Generation")
 
     # We have finished!
