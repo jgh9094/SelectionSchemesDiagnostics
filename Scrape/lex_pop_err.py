@@ -89,8 +89,8 @@ def main():
     args = parser.parse_args()
     data_directory = args.data_directory.strip()
     write_directory = args.dump_directory.strip()
-    snapshot = args.snapshot
     sel = args.selection
+    snapshot = args.snapshot
 
     if(sel == 0):
         lex(data_directory, write_directory, snapshot)
