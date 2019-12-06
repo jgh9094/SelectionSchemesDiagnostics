@@ -56,7 +56,7 @@ def lex(d_dir, w_dir, snap):
             seed = (r + (i * 100)) + LEX_OFFSET + REPLICATION_OFFSET
 
             # Check if data directory exists
-            if(os.path.isdir(dir + str(seed) + POP_FILE)):
+            if(os.path.isdir(dir + str(seed))):
                 # Create data frame
                 data = pd.read_csv(dir + str(seed) + POP_FILE)
 
