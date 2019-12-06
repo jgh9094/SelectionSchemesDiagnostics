@@ -68,6 +68,7 @@ def lex(d_dir, w_dir, snap):
                 header.append('r'+ str(r))
 
         result = pd.concat(frames, axis=1, join='inner')
+        print('shape=', result.shape)
         result['pop'] = [LEX_POP_SIZE[i] * result.shape[0]]
         result.to_csv("lex_pop_avg_err_" + str(LEX_POP_SIZE[i]) + ".csv", sep=',', header=header, index=True, index_label="Generation")
         print(result)
