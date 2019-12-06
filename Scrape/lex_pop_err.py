@@ -77,7 +77,7 @@ def lex(d_dir, w_dir, snap):
     print()
 
 ######################## TOURNAMENT ########################
-TRN_SIZE = [7, 100, 500, 700, 1000]
+TRN_SIZE = ['7', '100', '500', '700', '1000']
 TRN_OFFSET = 500
 TRN_DIR_1 = "SEL_TOURNAMENT__DIA_Exploitation__POP___TRT_100__TOURN_"
 TRN_DIR_2 = "__SEED_"
