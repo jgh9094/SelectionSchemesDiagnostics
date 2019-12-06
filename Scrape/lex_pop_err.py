@@ -68,6 +68,7 @@ def lex(d_dir, w_dir, snap):
                 header.append('r'+ str(r))
 
         result = pd.concat(frames, axis=1, join='inner')
+        result['pop'] = [LEX_POP_SIZE[i] * result.shape[0]]
         result.to_csv("lex_pop_avg_err_" + str(LEX_POP_SIZE[i]) + ".csv", sep=',', header=header, index=True, index_label="Generation")
         print(result)
 
@@ -93,31 +94,6 @@ def main():
 
     if(sel == 0):
         lex(data_directory, write_directory, snapshot)
-
-
-
-    # Iterate through each pop size
-    # for i in range(len(POP_SIZE)):
-    #     dir = data_directory + DIRECTORY + str(POP_SIZE[i]) + "__TRT_100__SEED_"
-    #     frames = []
-    #     header = []
-    #     # Iterate through all the seed replicates
-    #     for s in range(1,REPLICATES+1):
-    #         # Set directory and load all the data
-    #         dir = dir + str(s + (i * 100)) + POP_FILE
-    #         data = pd.read_csv(dir)
-
-    #         # Grab every nth
-    #         data = data.iloc[::snapshot, COL]
-    #         frames.append(data)
-    #         dir = data_directory + DIRECTORY + str(POP_SIZE[i]) + "__TRT_100__SEED_"
-
-    #         # Add the seed to the header
-    #         header.append("seed_"+str(s + (i * 100)))
-
-    #     result = pd.concat(frames, axis=1, join='inner')
-    #     result.to_csv("lex_avg_err_pop_" + str(POP_SIZE[i]) + ".csv", sep=',', header=header, index=True, index_label="Generation")
-    #     print(result)
 
 
 if __name__ == "__main__":
