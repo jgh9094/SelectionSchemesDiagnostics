@@ -67,7 +67,7 @@ def lex(d_dir, w_dir, snap):
         x = [i*1000 for i in range(51)]
         print('x=', x)
         print('len=', len(x))
-        result.insert(result.shape[1]+1, 'gen', x, True)
+        result.insert(result.shape[1], 'gen', x, True)
         header.append('pop')
         header.append('gen')
         result.to_csv("lex_pop_taxa_" + str(LEX_POP_SIZE[i]) + ".csv", sep=',', header=header, index=True, index_label="Generation")
