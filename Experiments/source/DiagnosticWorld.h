@@ -1,5 +1,7 @@
 /// This is the world for DiaOrgs
 
+// Hello World
+
 /* TODO SECTION
  * [X]: Finished coding >:D
  * [P]: Process of coding >:|
@@ -18,7 +20,7 @@
  * DIAGNOSTICS:
  * [X]: Exploitation
  * [X]: Structured Exploitation
- * []: Contradictory K Traits Ecologoy
+ * [P]: Contradictory K Traits Ecologoy
  * []: Weak Ecology
  * []: Specialist
  * []: Good & Bad Hints
@@ -33,7 +35,7 @@
  * [X]: Trait Min Error
  * [X]: Trait Solution Count
  * [X]: Population Average Error
- * [P]: Unique Genotypes
+ * [X]: Unique Genotypes
 */
 
 ///< Defnining name
