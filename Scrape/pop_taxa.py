@@ -21,7 +21,7 @@ REPLICATION_OFFSET=0
 DATA_DIR='/mnt/scratch/herna383/SelectionData/'
 POP_FILE = "/systematics.csv"
 REPLICATES = 100
-COL = 2
+COL = 1
 NOW = datetime.datetime.now()
 
 
@@ -55,7 +55,7 @@ def lex(d_dir, w_dir, snap):
                 data = pd.read_csv(dir + str(seed) + POP_FILE, index_col=False)
 
                 # Grab every nth row
-                data = data.iloc[::snap, 0:COL]
+                data = data.iloc[::snap, COL]
                 print(data)
                 frames.append(data)
 
@@ -64,6 +64,7 @@ def lex(d_dir, w_dir, snap):
 
         result = pd.concat(frames, axis=1, join='inner',ignore_index=True)
         result.insert(result.shape[1], 'pop', [LEX_POP_SIZE[i]]* result.shape[0], True)
+        result.insert(result.shape[2], 'gen', [i*1000 for i in range(1,51)], True)
         header.append('pop')
         result.to_csv("lex_pop_taxa_" + str(LEX_POP_SIZE[i]) + ".csv", sep=',', header=header, index=True, index_label="Generation")
 
