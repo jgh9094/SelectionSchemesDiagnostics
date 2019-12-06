@@ -48,7 +48,7 @@ def lex(d_dir, w_dir, snap):
         dir = d_dir + LEX_DIR_1 + LEX_POP_SIZE[i] + LEX_DIR_2
         # Store all the frames and headers
         frames = []
-        header = ['Generation']
+        header = []
 
         # Go through each replicate
         for r in range(1,REPLICATES+1):
