@@ -63,7 +63,7 @@ def lex(d_dir, w_dir, snap):
                 frames.append(data)
 
                 # Add replicate number to the header
-                header.append('r'+r)
+                header.append('r'+ str(r))
 
             # Reset the directgor so we can change the seed
             dir = d_dir + LEX_DIR_1 + str(LEX_POP_SIZE[i]) + LEX_DIR_2
