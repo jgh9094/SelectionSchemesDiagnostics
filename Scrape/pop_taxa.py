@@ -6,7 +6,7 @@
 # Input 2: Directory where the new csv files will be placed
 # Input 3: Print Interval!
 #
-# Output : create a csv for each population size
+# Output : create a csv with taxa total
 #
 # python3
 
@@ -19,7 +19,7 @@ import pandas as pd
 ######################## VARIABLES EVERYONE NEEDS TO KNOW ########################
 REPLICATION_OFFSET=0
 DATA_DIR='/mnt/scratch/herna383/SelectionData/'
-POP_FILE = "/pop_stats.csv"
+POP_FILE = "/systematics.csv"
 REPLICATES = 100
 COL = 1
 NOW = datetime.datetime.now()
@@ -33,7 +33,7 @@ LEX_DIR_2 = "__TRT_100__SEED_"
 
 def lex(d_dir, w_dir, snap):
     print('-----------------------------'*4)
-    print('Processing Lexicase Runs for Average Error-' + str(NOW))
+    print('Processing Lexicase Runs for TAXA-' + str(NOW))
 
     # Go though all treatment configurations
     for i in range(len(LEX_POP_SIZE)):
@@ -64,7 +64,7 @@ def lex(d_dir, w_dir, snap):
         result = pd.concat(frames, axis=1, join='inner',ignore_index=True)
         result.insert(result.shape[1], 'pop', [LEX_POP_SIZE[i]]* result.shape[0], True)
         header.append('pop')
-        result.to_csv("lex_pop_avg_err_" + str(LEX_POP_SIZE[i]) + ".csv", sep=',', header=header, index=True, index_label="Generation")
+        result.to_csv("lex_pop_taxa_" + str(LEX_POP_SIZE[i]) + ".csv", sep=',', header=header, index=True, index_label="Generation")
 
     # We have finished!
     print('-----------------------------'*4)
@@ -78,7 +78,7 @@ TRN_DIR_2 = "__SEED_"
 
 def tour(d_dir, w_dir, snap):
     print('-----------------------------'*4)
-    print('Processing Tournament Runs for Average Error-' + str(NOW))
+    print('Processing Tournament Runs for TAXA-' + str(NOW))
 
     # Go though all treatment configurations
     for i in range(len(TRN_SIZE)):
@@ -109,7 +109,7 @@ def tour(d_dir, w_dir, snap):
         result = pd.concat(frames, axis=1, join='inner',ignore_index=True)
         result.insert(result.shape[1], 'pop', [TRN_SIZE[i]]* result.shape[0], True)
         header.append('pop')
-        result.to_csv("trn_pop_avg_err_" + str(TRN_SIZE[i]) + ".csv", sep=',', header=header, index=True, index_label="Generation")
+        result.to_csv("trn_pop_taxa_" + str(TRN_SIZE[i]) + ".csv", sep=',', header=header, index=True, index_label="Generation")
 
     # We have finished!
     print('-----------------------------'*4)
