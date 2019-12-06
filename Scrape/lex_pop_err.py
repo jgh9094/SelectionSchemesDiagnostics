@@ -89,7 +89,7 @@ def main():
     args = parser.parse_args()
     data_directory = args.data_directory.strip()
     write_directory = args.dump_directory.strip()
-    snapshot = args.snapshot.strip()
+    snapshot = args.snapshot
     sel = args.selection
 
     if(sel == 0):
