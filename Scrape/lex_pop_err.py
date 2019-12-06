@@ -32,7 +32,7 @@ NOW = datetime.datetime.now()
 
 
 ######################## LEXICASE ########################
-LEX_POP_SIZE = [10, 100, 500, 700, 1000]
+LEX_POP_SIZE = ['10', '100', '500', '700', '1000']
 LEX_OFFSET = 0
 LEX_DIR_1 = "SEL_LEXICASE__DIA_Exploitation__POP_"
 LEX_DIR_2 = "__TRT_100__SEED_"
@@ -43,18 +43,20 @@ def lex(d_dir, w_dir, snap):
 
     # Go though all treatment configurations
     for i in range(len(LEX_POP_SIZE)):
+
+        # Set up the directory
+        dir = d_dir + LEX_DIR_1 + LEX_POP_SIZE[i] + LEX_DIR_2
+        # Store all the frames and headers
+        frames = []
+        header = []
+
         # Go through each replicate
         for r in range(1,REPLICATES+1):
-            # Create the directory
+            # Calculate Seed
             seed = (r + (i * 100)) + LEX_OFFSET + REPLICATION_OFFSET
-            dir = d_dir + LEX_DIR_1 + str(LEX_POP_SIZE[i]) + LEX_DIR_2 + str(seed)
-
-            # Store all the frames and headers
-            frames = []
-            header = []
 
             # Check if data directory exists
-            if(os.path.isdir(dir)):
+            if(os.path.isdir(dir + str(seed) + POP_FILE)):
                 # Create data frame
                 data = pd.read_csv(dir+POP_FILE)
 
@@ -64,9 +66,6 @@ def lex(d_dir, w_dir, snap):
 
                 # Add replicate number to the header
                 header.append('r'+ str(r))
-
-            # Reset the directgor so we can change the seed
-            dir = d_dir + LEX_DIR_1 + str(LEX_POP_SIZE[i]) + LEX_DIR_2
 
         result = pd.concat(frames, axis=1, join='inner')
         result.to_csv("lex_pop_avg_err" + str(LEX_POP_SIZE[i]) + ".csv", sep=',', header=header, index=True, index_label="Generation")
