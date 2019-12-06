@@ -56,13 +56,13 @@ def lex(d_dir, w_dir, snap):
 
                 # Grab every nth row
                 data = data.iloc[::snap, COL]
-                print(data)
                 frames.append(data)
 
                 # Add replicate number to the header
                 header.append('r'+ str(r))
 
         result = pd.concat(frames, axis=1, join='inner',ignore_index=True)
+        print(result)
         result.insert(result.shape[1], 'pop', [LEX_POP_SIZE[i]]* result.shape[0], True)
         x = [i*1000 for i in range(1,51)]
         print('x=', x)
