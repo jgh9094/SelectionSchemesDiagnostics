@@ -65,8 +65,6 @@ def lex(d_dir, w_dir, snap):
         print(result)
         result.insert(result.shape[1], 'pop', [LEX_POP_SIZE[i]]* result.shape[0], True)
         x = [i*1000 for i in range(result.shape[1])]
-        print('x=', x)
-        print('len=', len(x))
         result.insert(result.shape[1], 'gen', x, True)
         header.append('pop')
         header.append('gen')
