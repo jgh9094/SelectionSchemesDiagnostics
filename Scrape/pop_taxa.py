@@ -55,7 +55,7 @@ def lex(d_dir, w_dir, snap):
                 data = pd.read_csv(dir + str(seed) + POP_FILE, index_col=False)
 
                 # Grab every nth row
-                data = data.iloc[::snap, COL]
+                data = data.iloc[::snap, 0:COL]
                 frames.append(data)
 
                 # Add replicate number to the header
