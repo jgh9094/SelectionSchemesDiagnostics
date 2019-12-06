@@ -123,7 +123,7 @@ def dsl(d_dir, GENRATIONS):
     for r in range(1,REPLICATES+1):
       # Create the directory
       seed = (r + (i * 100)) + DSL_OFFSET + REPLICATION_OFFSET
-      dir = d_dir + DSL_DIR_1 + str(DSL_PROP[i]) + DSL_DIR_2 + str(seed)
+      dir = d_dir + DSL_DIR_1 + DSL_PROP[i] + DSL_DIR_2 + str(seed)
 
       # Check to see if directory exists
       if(os.path.isdir(dir)):
@@ -164,7 +164,7 @@ def coh(d_dir, GENRATIONS):
     for r in range(1,REPLICATES+1):
       # Create the directory
       seed = (r + (i * 100)) + COH_OFFSET + REPLICATION_OFFSET
-      dir = d_dir + COH_DIR_1 + str(COH_PROP[i]) + COH_DIR_2 + str(seed)
+      dir = d_dir + COH_DIR_1 + COH_PROP[i] + COH_DIR_2 + str(seed)
 
       # Check to see if directory exists
       if(os.path.isdir(dir)):
