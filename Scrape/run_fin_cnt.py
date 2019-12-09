@@ -92,7 +92,7 @@ def tour(d_dir, GENRATIONS):
 
         if(last  < GENRATIONS):
           lost.append(seed)
-          print(dir + '===FOUND===NOGO')
+          print(dir + '===FOUND===NOGO===' + str(last))
 
         else:
           print(dir + '===FOUND===FINISHED')
@@ -133,7 +133,7 @@ def dsl(d_dir, GENRATIONS):
 
         if(last  < GENRATIONS):
           lost.append(seed)
-          print(dir + '===FOUND===NOGO')
+          print(dir + '===FOUND===NOGO===' + str(last))
 
         else:
           print(dir + '===FOUND===FINISHED')
@@ -174,7 +174,7 @@ def coh(d_dir, GENRATIONS):
 
         if(last  < GENRATIONS):
           lost.append(seed)
-          print(dir + '===FOUND===NOGO')
+          print(dir + '===FOUND===NOGO===' + str(last))
 
         else:
           print(dir + '===FOUND===FINISHED')
