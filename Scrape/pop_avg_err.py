@@ -154,7 +154,7 @@ def dsl(d_dir, w_dir, snap):
         result = pd.concat(frames, axis=1, join='inner',ignore_index=True)
         result.insert(result.shape[1], 'pop', [LEX_POP_SIZE[i]]* result.shape[0], True)
         header.append('pop')
-        result.to_csv("lex_pop_avg_err_" + str(LEX_POP_SIZE[i]) + ".csv", sep=',', header=header, index=True, index_label="Generation")
+        result.to_csv("drt_pop_avg_err_" + str(LEX_POP_SIZE[i]) + ".csv", sep=',', header=header, index=True, index_label="Generation")
 
     # We have finished!
     print('-----------------------------'*4)
@@ -180,6 +180,9 @@ def main():
 
     elif(sel == 1):
         tour(data_directory, write_directory, snapshot)
+
+    elif(sel == 2):
+        dsl(data_directory, write_directory, snapshot)
 
 
 if __name__ == "__main__":
