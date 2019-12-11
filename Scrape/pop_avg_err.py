@@ -155,7 +155,7 @@ def dsl(d_dir, w_dir, snap):
         result = pd.concat(frames, axis=1, join='inner',ignore_index=True)
         result.insert(result.shape[1], 'pop', [LEX_POP_SIZE[i]]* result.shape[0], True)
         header.append('pop')
-        result.to_csv("drt_pop_avg_err_" + str(LEX_POP_SIZE[i]) + ".csv", sep=',', header=header, index=True, index_label="Generation")
+        result.to_csv("dsl" + str(LEX_POP_SIZE[i]) + ".csv", sep=',', header=header, index=True, index_label="Generation")
 
     # We have finished!
     print('-----------------------------'*4)
