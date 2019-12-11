@@ -141,6 +141,7 @@ def dsl(d_dir, w_dir, snap):
 
             # Check to see if directory exists
             if(os.path.isdir(dir + str(seed))):
+                print(dir + str(seed) + POP_FILE)
                 # Create data frame
                 data = pd.read_csv(dir + str(seed) + POP_FILE, index_col=False)
 
