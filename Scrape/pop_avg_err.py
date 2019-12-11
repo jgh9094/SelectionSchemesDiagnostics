@@ -243,7 +243,7 @@ def dft(d_dir, w_dir, snap):
             header.append('r'+ str(r))
 
     result = pd.concat(frames, axis=1, join='inner',ignore_index=True)
-    result.insert(result.shape[1], 'pop', ['dft']* result.shape[0], True)
+    result.insert(result.shape[1], 'pop', [1000]* result.shape[0], True)
     header.append('pop')
     result.to_csv("dft_pop_avg_err.csv", sep=',', header=header, index=True, index_label="Generation")
 
