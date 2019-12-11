@@ -115,6 +115,51 @@ def tour(d_dir, w_dir, snap):
     print('-----------------------------'*4)
     print()
 
+######################## DOWN SAMPLED ########################
+DSL_PROP = ['.05', '.10', '.25', '.50', '1.0']
+DSL_OFFSET = 1500
+DSL_DIR_1 = "SEL_DOWN__DIA_Exploitation__POP_1000__TRT_100__PROP_"
+DSL_DIR_2 = "__SEED_"
+
+def dsl(d_dir, w_dir, snap):
+    print('-----------------------------'*4)
+    print('Processing Down Sampled Runs-' + str(NOW))
+
+
+    for i in range(len(DSL_PROP)):
+
+        # Set up the directory
+        dir = d_dir + LEX_DIR_1 + LEX_POP_SIZE[i] + LEX_DIR_2
+
+        # Store all the frames and headers
+        frames = []
+        header = []
+
+        for r in range(1,REPLICATES+1):
+            # Calculate Seed
+            seed = (r + (i * 100)) + DSL_OFFSET + REPLICATION_OFFSET
+
+            # Check to see if directory exists
+            if(os.path.isdir(dir + str(seed))):
+                # Create data frame
+                data = pd.read_csv(dir + str(seed) + POP_FILE, index_col=False)
+
+                # Grab every nth row
+                data = data.iloc[::snap, COL]
+                frames.append(data)
+
+                # Add replicate number to the header
+                header.append('r'+ str(r))
+
+        result = pd.concat(frames, axis=1, join='inner',ignore_index=True)
+        result.insert(result.shape[1], 'pop', [LEX_POP_SIZE[i]]* result.shape[0], True)
+        header.append('pop')
+        result.to_csv("lex_pop_avg_err_" + str(LEX_POP_SIZE[i]) + ".csv", sep=',', header=header, index=True, index_label="Generation")
+
+    # We have finished!
+    print('-----------------------------'*4)
+    print()
+
 def main():
     # Generate the arguments
     parser = argparse.ArgumentParser(description="Data aggregation script.")
