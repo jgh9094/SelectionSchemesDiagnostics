@@ -317,11 +317,22 @@ void DiaWorld::SetMutations() {
 
     // Loop through and apply mutations if applicable
     for(size_t i = 0; i < genome.size(); i++) {
-      // Can we do a mutation?
+      // Can we do a point offset mutation?
       if(random_ptr->P(config.MUTATE_VAL())) {
-        // Apply mutation from normal distribution
+        // Get mutation and see if we need to cap :P
         double evo = random_ptr->GetRandNormal(config.MEAN(), config.STD());
-        genome[i] += evo;
+
+        // Check if we are over
+        if(genome[i] + evo > config.TARGET()) {
+          genome[i] = config.TARGET();
+        }
+        // Check if we are under
+        else if (genome[i] + evo < 0.0) {
+          genome[i] = 0.0;
+        }
+        else {
+          genome[i] += evo;
+        }
         cnt += 1;
       }
     }
