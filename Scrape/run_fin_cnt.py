@@ -203,7 +203,7 @@ def dft(d_dir, GENRATIONS):
   for r in range(1,REPLICATES+1):
     # Create the directory
     seed = r + DFT_OFFSET + REPLICATION_OFFSET
-    dir = d_dir + COH_DIR_1  + DFT_DIR_2 + str(seed)
+    dir = d_dir + DFT_DIR_1  + DFT_DIR_2 + str(seed)
 
     # Check to see if directory exists
     if(os.path.isdir(dir)):
