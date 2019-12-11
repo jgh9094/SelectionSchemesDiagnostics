@@ -188,6 +188,44 @@ def coh(d_dir, GENRATIONS):
   print('-----------------------------'*4)
   print()
 
+
+######################## DRIFT ########################
+DFT_OFFSET = 2000
+DFT_DIR_1 = "SEL_DRIFT__DIA_Exploitation__POP_1000__TRT_100__SEED_2"
+DFT_DIR_2 = "__SEED_"
+
+def dft(d_dir, GENRATIONS):
+  print('-----------------------------'*4)
+  print('Processing Drift Runs-' + str(NOW))
+
+  lost = []
+
+  for r in range(1,REPLICATES+1):
+    # Create the directory
+    seed = r + DFT_OFFSET + REPLICATION_OFFSET
+    dir = d_dir + COH_DIR_1  + DFT_DIR_2 + str(seed)
+
+    # Check to see if directory exists
+    if(os.path.isdir(dir)):
+      # Get the last row and check if we finished the run
+      f = pd.read_csv(dir+POP_FILE)
+      last = int(f.tail(1).values.tolist()[0][0])
+
+      if(last  < GENRATIONS):
+        lost.append(seed)
+        print(dir + '===FOUND===NOGO===' + str(last))
+
+      else:
+        print(dir + '===FOUND===FINISHED')
+
+    else:
+      print(dir + '===NOGO')
+      lost.append(seed)
+
+
+  print('SEED INCOMPLETE/UNCREATED=', lost)
+  print('-----------------------------'*4)
+  print()
 def main():
   # Generate the arguments
   parser = argparse.ArgumentParser(description="Data aggregation script.")
@@ -217,6 +255,9 @@ def main():
 
   elif(sel == 3):
     dsl(data_directory, gen)
+
+  elif(sel == 4):
+    dft(data_directory, gen)
 
 
 if __name__ == "__main__":
