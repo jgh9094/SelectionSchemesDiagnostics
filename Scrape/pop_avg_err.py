@@ -129,7 +129,7 @@ def dsl(d_dir, w_dir, snap):
     for i in range(len(DSL_PROP)):
 
         # Set up the directory
-        dir = d_dir + LEX_DIR_1 + LEX_POP_SIZE[i] + LEX_DIR_2
+        dir = d_dir + DSL_DIR_1 + DSL_PROP[i] + DSL_DIR_2
 
         # Store all the frames and headers
         frames = []
