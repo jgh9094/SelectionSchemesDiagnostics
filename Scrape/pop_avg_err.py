@@ -222,7 +222,7 @@ def dft(d_dir, w_dir, snap):
     frames = []
     header = []
 
-    dir = DFT_DIR_1
+    dir = d_dir + DFT_DIR_1
 
     for r in range(1,REPLICATES+1):
         # Calculate Seed
@@ -248,6 +248,8 @@ def dft(d_dir, w_dir, snap):
     # We have finished!
     print('-----------------------------'*4)
     print()
+
+
 def main():
     # Generate the arguments
     parser = argparse.ArgumentParser(description="Data aggregation script.")
