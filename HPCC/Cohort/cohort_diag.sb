@@ -1,0 +1,140 @@
+#!/bin/bash
+########## Define Resources Needed with SBATCH Lines ##########
+
+#SBATCH --time=48:00:00            # limit of wall clock time - how long the job will run (same as -t)
+#SBATCH --array=1-500
+#SBATCH --mem=10G                    # memory required per node - amount of memory (in bytes)
+#SBATCH --job-name coh-exp           # you can give your job a name for easier identification (same as -J)
+#SBATCH --account=devolab
+
+########## Command Lines to Run ##########
+
+##################################
+# Setup relevant directories
+##################################
+DATA_DIR=/mnt/scratch/herna383/SelectionData/Cohort
+
+
+##################################
+# Setup relevant directories
+##################################
+GENERATIONS=50001
+
+##################################
+# Setup relevant directories
+# Previously used ones will be commented out
+##################################
+# # REPLICATION_OFFSET=0
+REPLICATION_OFFSET=5000
+
+
+##################################
+# Setup random seed info
+##################################
+SEL_MODE=COHORT
+PROBLEM_SEED_OFFSET=1000
+SEED=$((SLURM_ARRAY_TASK_ID + PROBLEM_SEED_OFFSET + REPLICATION_OFFSET))
+
+
+##################################
+# Setup population size
+##################################
+POP_SIZE=1000
+
+##################################
+# Setup tournament size
+##################################
+PROPORTION__1=.05
+PROPORTION__2=.10
+PROPORTION__3=.25
+PROPORTION__4=.50
+PROPORTION__5=1.0
+
+
+##################################
+# Setup trait size
+##################################
+TRAIT_SIZE__1=100
+
+
+##################################
+# Folder naming
+##################################
+DIAGNOSTIC__1=Exploitation
+DIAGNOSTIC__2=StructuredExploitation
+DIAGNOSTIC__3=Ecology
+
+
+##################################
+# Setup selection scheme
+##################################
+TOURNAMENT=0
+LEXICASE=1
+DRIFT=2
+COHORT_LEXICASE=3
+DOWN_SAMPLED_LEXICASE=4
+
+
+##################################
+# Setup diagnostic
+##################################
+EXPLOITATION=0
+STRUCTURED_EXPLOITATION=1
+CONTRADICTORY_ECOLOGY_DIAGNOSTIC=2
+
+
+###### Treatments #######
+TREATMENT__COHORT_1__MIN=1
+TREATMENT__COHORT_1__MAX=100
+
+TREATMENT__COHORT_2__MIN=101
+TREATMENT__COHORT_2__MAX=200
+
+TREATMENT__COHORT_3__MIN=201
+TREATMENT__COHORT_3__MAX=300
+
+TREATMENT__COHORT_4__MIN=301
+TREATMENT__COHORT_4__MAX=400
+
+TREATMENT__COHORT_5__MIN=401
+TREATMENT__COHORT_5__MAX=500
+
+####################################################################
+
+# SEL_COHORT_LEX__CN_1__CS_512
+
+if [ ${SLURM_ARRAY_TASK_ID} -ge ${TREATMENT__COHORT_1__MIN} ] && [ ${SLURM_ARRAY_TASK_ID} -le ${TREATMENT__COHORT_1__MAX} ] ; then
+  NAME=SEL_${SEL_MODE}__DIA_${DIAGNOSTIC__1}__POP_${POP_SIZE}__TRT_${TRAIT_SIZE__1}__PROP_${PROPORTION__1}__SEED_${SEED}
+  PROPORTION=${PROPORTION__1}
+
+elif [ ${SLURM_ARRAY_TASK_ID} -ge ${TREATMENT__COHORT_2__MIN} ] && [ ${SLURM_ARRAY_TASK_ID} -le ${TREATMENT__COHORT_2__MAX} ] ; then
+  NAME=SEL_${SEL_MODE}__DIA_${DIAGNOSTIC__1}__POP_${POP_SIZE}__TRT_${TRAIT_SIZE__1}__PROP_${PROPORTION__2}__SEED_${SEED}
+  PROPORTION=${PROPORTION__2}
+
+elif [ ${SLURM_ARRAY_TASK_ID} -ge ${TREATMENT__COHORT_3__MIN} ] && [ ${SLURM_ARRAY_TASK_ID} -le ${TREATMENT__COHORT_3__MAX} ] ; then
+  NAME=SEL_${SEL_MODE}__DIA_${DIAGNOSTIC__1}__POP_${POP_SIZE}__TRT_${TRAIT_SIZE__1}__PROP_${PROPORTION__3}__SEED_${SEED}
+  PROPORTION=${PROPORTION__3}
+
+elif [ ${SLURM_ARRAY_TASK_ID} -ge ${TREATMENT__COHORT_4__MIN} ] && [ ${SLURM_ARRAY_TASK_ID} -le ${TREATMENT__COHORT_4__MAX} ] ; then
+  NAME=SEL_${SEL_MODE}__DIA_${DIAGNOSTIC__1}__POP_${POP_SIZE}__TRT_${TRAIT_SIZE__1}__PROP_${PROPORTION__4}__SEED_${SEED}
+  PROPORTION=${PROPORTION__4}
+
+elif [ ${SLURM_ARRAY_TASK_ID} -ge ${TREATMENT__COHORT_5__MIN} ] && [ ${SLURM_ARRAY_TASK_ID} -le ${TREATMENT__COHORT_5__MAX} ] ; then
+  NAME=SEL_${SEL_MODE}__DIA_${DIAGNOSTIC__1}__POP_${POP_SIZE}__TRT_${TRAIT_SIZE__1}__PROP_${PROPORTION__5}__SEED_${SEED}
+  PROPORTION=${PROPORTION__5}
+
+else
+  echo "${SEED} from ${PROBLEM} failed to launch" >> /mnt/scratch/herna383/SelectionData/ps-coh-failtolaunch.txt
+
+fi
+
+####################################################################
+
+RUN_DIR=${DATA_DIR}/${NAME}/
+
+# make a run directory
+mkdir -p ${RUN_DIR}
+
+echo "../../Experiments/diagnostics -SEED ${SEED} -POP_SIZE ${POP_SIZE} -DIAGNOSTIC ${EXPLOITATION} -OUTPUT_DIR ${RUN_DIR} -SELECTION ${COHORT_LEXICASE} -MAX_GENS ${GENERATIONS} -CLS_POP_PROP ${PROPORTION}  -CLS_TRT_PROP ${PROPORTION} > run.log" > ./cmd-coh.txt
+
+../../Experiments/diagnostics -SEED ${SEED} -POP_SIZE ${POP_SIZE} -DIAGNOSTIC ${EXPLOITATION} -OUTPUT_DIR ${RUN_DIR} -SELECTION ${COHORT_LEXICASE} -MAX_GENS ${GENERATIONS} -CLS_POP_PROP ${PROPORTION}  -CLS_TRT_PROP ${PROPORTION}
