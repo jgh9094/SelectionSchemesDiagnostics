@@ -138,10 +138,10 @@ def dsl(d_dir, w_dir, snap):
         for r in range(1,REPLICATES+1):
             # Calculate Seed
             seed = (r + (i * 100)) + DSL_OFFSET + REPLICATION_OFFSET
-
+            print(dir + str(seed) + POP_FILE)
             # Check to see if directory exists
             if(os.path.isdir(dir + str(seed))):
-                print(dir + str(seed) + POP_FILE)
+
                 # Create data frame
                 data = pd.read_csv(dir + str(seed) + POP_FILE, index_col=False)
 
