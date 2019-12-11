@@ -148,8 +148,6 @@ def dsl(d_dir, w_dir, snap):
                 # Grab every nth row
                 data = data.iloc[::snap, COL]
 
-                print(data)
-
                 frames.append(data)
 
                 # Add replicate number to the header
