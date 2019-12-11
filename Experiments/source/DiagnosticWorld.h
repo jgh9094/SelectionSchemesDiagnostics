@@ -135,7 +135,7 @@ class DiaWorld : public emp::World<DiaOrg> {
     std::fstream trt_sol_cnt;         ///< Track number of solutions for a trait per update
     std::fstream trt_avg_err;         ///< Track the average error for a trait per update
     std::fstream trt_min_err;         ///< Track the minimum error for a trait  per update
-    std::fstream pop_avg_err;         ///< Track the average error for the population each generation
+    std::fstream pop_stats;         ///< Track the average error for the population each generation
     emp::Ptr<systematics_t> sys_ptr; ///< Short cut to correctly-typed systematics manager. Base class will be responsible for memory management.
 
 
@@ -261,6 +261,7 @@ class DiaWorld : public emp::World<DiaOrg> {
     void MinimumTraitError(size_t up);           ///< Get best error per trait
     void PopulationData(size_t up);              ///< Call functions that return single value pop data
     double AveragePopError();                    ///< Average error for a population per update
+    double MinPopError();                        ///< Total error for the best performing org in a generation
     size_t UniqueGenomes();                      ///< Number of Unique genomes per update
 
 
@@ -1087,7 +1088,7 @@ void DiaWorld::SetCSVHeaders() {
   trt_avg_err.open(config.OUTPUT_DIR() + "trt_avg_err.csv", std::ios::out | std::ios::app);
   trt_min_err.open(config.OUTPUT_DIR() + "trt_min_err.csv", std::ios::out | std::ios::app);
   trt_sol_cnt.open(config.OUTPUT_DIR() + "trt_sol_cnt.csv", std::ios::out | std::ios::app);
-  pop_avg_err.open(config.OUTPUT_DIR() + "pop_stats.csv", std::ios::out | std::ios::app);
+  pop_stats.open(config.OUTPUT_DIR() + "pop_stats.csv", std::ios::out | std::ios::app);
 
   // Create header
   std::string head = "Update,";
@@ -1099,7 +1100,7 @@ void DiaWorld::SetCSVHeaders() {
   trt_avg_err << head << std::endl;
   trt_min_err << head << std::endl;
   trt_sol_cnt << head << std::endl;
-  pop_avg_err << "Gen,Avg_Error,Unique_Genome" << std::endl;
+  pop_stats << "Gen,Avg_Error,Unique_Genome,Min_Error" << std::endl;
 }
 
 ///< Will call all other functions to gather data
@@ -1200,7 +1201,7 @@ void DiaWorld::MinimumTraitError(size_t up) {
 
 ///< Call functions that return single value pop data
 void DiaWorld::PopulationData(size_t up) {
-  pop_avg_err << up << "," << AveragePopError() << "," << UniqueGenomes()  << std::endl;
+  pop_stats << up << "," << AveragePopError() << "," << UniqueGenomes() << "," << MinPopError()  << std::endl;
 }
 
 ///< Number of Unique genomes per update
@@ -1253,6 +1254,25 @@ double DiaWorld::AveragePopError() {
   return (error / (double) pop.size());
 }
 
+///< Total error for the best performing org in a generation
+double DiaWorld::MinPopError() {
+  // Max possible error
+  double error = config.TARGET() * (double) config.K_TRAITS();
+  // tracking the best org
+  size_t best = 0;
+
+  for(size_t i = 0; i < pop.size(); i++) {
+    DiaOrg & org = *pop[i];
+
+    if(org.GetTotalScore() < error) {
+      error = org.GetTotalScore();
+      best = i;
+    }
+  }
+
+  DiaOrg & org = *pop[best];
+  return org.GetTotalScore();
+}
 
 void DiaWorld::SnapshotPhylogony() {
   sys_ptr->Snapshot(config.OUTPUT_DIR() + "phylo_" + emp::to_string(GetUpdate()) + ".csv");
