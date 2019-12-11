@@ -191,8 +191,7 @@ def coh(d_dir, GENRATIONS):
 
 ######################## DRIFT ########################
 DFT_OFFSET = 2000
-DFT_DIR_1 = "SEL_DRIFT__DIA_Exploitation__POP_1000__TRT_100__SEED_2"
-DFT_DIR_2 = "__SEED_"
+DFT_DIR_1 = "SEL_DRIFT__DIA_Exploitation__POP_1000__TRT_100__SEED_"
 
 def dft(d_dir, GENRATIONS):
   print('-----------------------------'*4)
@@ -203,7 +202,7 @@ def dft(d_dir, GENRATIONS):
   for r in range(1,REPLICATES+1):
     # Create the directory
     seed = r + DFT_OFFSET + REPLICATION_OFFSET
-    dir = d_dir + DFT_DIR_1  + DFT_DIR_2 + str(seed)
+    dir = d_dir + DFT_DIR_1  +  str(seed)
 
     # Check to see if directory exists
     if(os.path.isdir(dir)):
