@@ -162,7 +162,7 @@ def dsl(d_dir, w_dir, snap):
     print('-----------------------------'*4)
     print()
 
-######################## DOWN SAMPLED ########################
+######################## COHORT ########################
 COH_PROP = ['.05', '.10', '.25', '.50', '1.0']
 COH_OFFSET = 1000
 COH_DIR_1 = "SEL_COHORT__DIA_Exploitation__POP_1000__TRT_100__PROP_"
@@ -209,6 +209,45 @@ def coh(d_dir, w_dir, snap):
     print('-----------------------------'*4)
     print()
 
+
+######################## DRIFT ########################
+DFT_OFFSET = 2000
+DFT_DIR_1 = "SEL_DRIFT__DIA_Exploitation__POP_1000__TRT_100__SEED_"
+
+def dft(d_dir, w_dir, snap):
+    print('-----------------------------'*4)
+    print('Processing Down Sampled Runs-' + str(NOW))
+
+    # Store all the frames and headers
+    frames = []
+    header = []
+
+    dir = DFT_DIR_1
+
+    for r in range(1,REPLICATES+1):
+        # Calculate Seed
+        seed = r + DFT_OFFSET + REPLICATION_OFFSET
+        print(dir + str(seed) + POP_FILE)
+        # Check to see if directory exists
+        if(os.path.isdir(dir + str(seed))):
+
+            # Create data frame
+            data = pd.read_csv(dir + str(seed) + POP_FILE, index_col=False)
+
+            # Grab every nth row
+            data = data.iloc[::snap, COL]
+
+            frames.append(data)
+
+            # Add replicate number to the header
+            header.append('r'+ str(r))
+
+    result = pd.concat(frames, axis=1, join='inner',ignore_index=True)
+    result.to_csv("dft_pop_avg_err.csv", sep=',', header=header, index=True, index_label="Generation")
+
+    # We have finished!
+    print('-----------------------------'*4)
+    print()
 def main():
     # Generate the arguments
     parser = argparse.ArgumentParser(description="Data aggregation script.")
@@ -236,8 +275,8 @@ def main():
     elif(sel == 3):
         dsl(data_directory, write_directory, snapshot)
 
-    # elif(sel == 2):
-    #     dsl(data_directory, write_directory, snapshot)
+    elif(sel == 4):
+        dft(data_directory, write_directory, snapshot)
 
 
 if __name__ == "__main__":
