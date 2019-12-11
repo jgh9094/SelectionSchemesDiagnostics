@@ -155,7 +155,7 @@ void DiaOrg::StructExploitError(const genome_t & target) { ///< Will calculate t
     }
     else {
       fail = true;
-      DistanceError(i, target[i]);
+      DistanceError(i, 0.0);
       break;
     }
   }
