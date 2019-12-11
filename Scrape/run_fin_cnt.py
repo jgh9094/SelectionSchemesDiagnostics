@@ -225,6 +225,8 @@ def dft(d_dir, GENRATIONS):
   print('SEED INCOMPLETE/UNCREATED=', lost)
   print('-----------------------------'*4)
   print()
+
+
 def main():
   # Generate the arguments
   parser = argparse.ArgumentParser(description="Data aggregation script.")
@@ -257,6 +259,9 @@ def main():
 
   elif(sel == 4):
     dft(data_directory, gen)
+
+  else:
+    print('SELECTION CHOICE DOES NOT EXIST')
 
 
 if __name__ == "__main__":
