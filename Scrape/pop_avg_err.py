@@ -162,6 +162,53 @@ def dsl(d_dir, w_dir, snap):
     print('-----------------------------'*4)
     print()
 
+######################## DOWN SAMPLED ########################
+COH_PROP = ['.05', '.10', '.25', '.50', '1.0']
+COH_OFFSET = 1000
+COH_DIR_1 = "SEL_COHORT__DIA_Exploitation__POP_1000__TRT_100__PROP_"
+COH_DIR_2 = "__SEED_"
+
+def coh(d_dir, w_dir, snap):
+    print('-----------------------------'*4)
+    print('Processing Down Sampled Runs-' + str(NOW))
+
+
+    for i in range(len(COH_PROP)):
+
+        # Set up the directory
+        dir = d_dir + COH_DIR_1 + COH_PROP[i] + COH_DIR_2
+
+        # Store all the frames and headers
+        frames = []
+        header = []
+
+        for r in range(1,REPLICATES+1):
+            # Calculate Seed
+            seed = (r + (i * 100)) + COH_OFFSET + REPLICATION_OFFSET
+            print(dir + str(seed) + POP_FILE)
+            # Check to see if directory exists
+            if(os.path.isdir(dir + str(seed))):
+
+                # Create data frame
+                data = pd.read_csv(dir + str(seed) + POP_FILE, index_col=False)
+
+                # Grab every nth row
+                data = data.iloc[::snap, COL]
+
+                frames.append(data)
+
+                # Add replicate number to the header
+                header.append('r'+ str(r))
+
+        result = pd.concat(frames, axis=1, join='inner',ignore_index=True)
+        result.insert(result.shape[1], 'pop', [COH_PROP[i]]* result.shape[0], True)
+        header.append('pop')
+        result.to_csv("coh_pop_avg_err_" + str(COH_PROP[i]) + ".csv", sep=',', header=header, index=True, index_label="Generation")
+
+    # We have finished!
+    print('-----------------------------'*4)
+    print()
+
 def main():
     # Generate the arguments
     parser = argparse.ArgumentParser(description="Data aggregation script.")
@@ -184,7 +231,13 @@ def main():
         tour(data_directory, write_directory, snapshot)
 
     elif(sel == 2):
+        coh(data_directory, write_directory, snapshot)
+
+    elif(sel == 3):
         dsl(data_directory, write_directory, snapshot)
+
+    # elif(sel == 2):
+    #     dsl(data_directory, write_directory, snapshot)
 
 
 if __name__ == "__main__":
